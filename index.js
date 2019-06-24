@@ -69,7 +69,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
         console.log(e);
         res.send("Request unsuccessful. \n Error Log: " + e);
     }
-    res.end();
+    res.end(); 
 })
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
