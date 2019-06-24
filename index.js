@@ -61,7 +61,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
             }
             // end
             addtofile(ide, name); //add to event list 
-            res.json(JSON.parse(nf)); //result send back json file
+            res.send("REQUEST SUCCESSFUL"); //result send back status
         } else {
             throw "FILE EXISTS";
         }
@@ -69,12 +69,11 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
         console.log(e);
         res.send("Request unsuccessful. \n Error Log: " + e);
     } 
+
     res.end(); 
 })
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
-    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
-        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
-    }
+    makeel();
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     result.events.push({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
@@ -89,6 +88,12 @@ function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     replace.sync(options);
 }
 
+function makeel() {
+    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
+        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
+    }
+    return;
+}
 app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     filedir =  __dirname + `/events/${req.params.eventId}.json`;
     res.json(JSON.parse(fs.readFileSync(filedir)));
@@ -98,8 +103,15 @@ app.get("/", function(req, res) { //MAIN PAGE REDIRECT TO EVENTS
     res.redirect("/events");
 })
 app.get("/events", function (req, res) { //LIST OF EVENTS
-    
+    makeel();
+    var el = loadevent();
+    console.log(el);
+    res.render("index", { els: el.events });
 })
+
+function loadevent() {
+    return JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
+}
 app.listen(port, function() { //START WEBSERVER
     console.log(`PORT ${port}`);
 })
