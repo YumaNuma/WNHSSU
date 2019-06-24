@@ -1,0 +1,8 @@
+{"name" : "templateevent",
+    "date" :{
+        "month": "monthi",
+        "day": "dayi"
+    },
+    "time" : "timei",
+    "pos" : "posi",
+    "people" : ""}
