@@ -32,15 +32,23 @@ app.post("/events/addnew", function(req, res) {
             replaceall(nf, "dayi", day);
             replaceall(nf, "timei", time);
             replaceall(nf, "posi", pn);
+            addtofile(name);
+            res.send("Request successful");
         } else {
             throw "not success";
         }
     } catch(e) {
         console.log(e);
+        res.send("Request unsuccessful");
     }
     res.end();
 })
-
+function addtofile(name1) {
+    var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
+    result.events.push({ "id": ide, "name": name })
+    fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
+    console.log(result);
+}
 function replaceall(a, b, c) {
     options = {
         "files": a,
@@ -49,6 +57,7 @@ function replaceall(a, b, c) {
     }
     replace.sync(options);
 }
+
 app.get('/events/:eventId', function(req, res) {
     filedir =  __dirname + `/events/${req.params.eventId}.json`;
     res.json(JSON.parse(fs.readFileSync(filedir)));
