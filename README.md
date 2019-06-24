@@ -1,2 +1,2 @@
-# WNHSSU
-System for events and signing up for events
+# Williamsville North High School Event System
+  I made this system cause I was batshit going crazy not knowing what events there were or who was working them or if someone was already working them. So I just decided to make my own system and hopefully have it implemented into the stage crew. This was developed by me, Zaid Arshad, through tears and my last remaining brain cells right after finals week. This is literally the messiest thing i've created and I'll try to clean it up and refactor it as much as I can. I welcome contributors cause I am far from perfect and anyone is welcome to download this and use it for their own school or whatever.
