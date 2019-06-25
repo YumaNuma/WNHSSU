@@ -39,7 +39,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     month = req.query.month; //e.g. ?month=09
     day = req.query.day; // e.g. ?day=24
     time = req.query.time; //e.g. ?time=5:30
-    loc = req.query.location;
+    loc = req.query.loca;
     pn = req.query.pn; //positions needed e.g. ?pn=1-3
     nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATION
     console.log(ide + " " + name + " " + month + " " + day + " " + time + " " + pn);
@@ -52,11 +52,12 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
             replaceall(nf, "dayi", day);
             replaceall(nf, "timei", time);
             replaceall(nf, "loci", loc);
-            if (pn = 1) {
+            replaceall(nf, "idi", ide);
+            if (pn == 1) {
                 replaceall(nf, "posi", "Sound Only");
-            } else if (pn = 2) {
+            } else if (pn == 2) {
                 replaceall(nf, "posi", "Sound & Lights");
-            } else if (pn = 3) {
+            } else if (pn == 3) {
                 replaceall(nf, "posi", "Sound & Lights & Backstage");
             } else {
                 throw "INVALID POSITION"
@@ -79,7 +80,6 @@ function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     result.events.unshift({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
-    console.log(result);
 }
 function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     options = {
@@ -96,21 +96,72 @@ function makeel() {
     }
     return;
 }
+
+//the event page
 app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     filedir = __dirname + `/events/${req.params.eventId}.json`;
     var date = new Date().getFullYear().toString();
     var datate = JSON.parse(fs.readFileSync(filedir));
-    res.render("viewpage", { datai: datate, yeari: date})
+    res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
 })
 
-app.get("/", function(req, res) { //MAIN PAGE REDIRECT TO EVENTS
+//the signup for the event page
+app.get('/events/:eventId/signup', function (req, res) { //signup
+    var fid = req.params.eventId;
+    res.render("signup", { datak: fid });
+})
+
+//the post url where the data from the event signup page goes to
+app.post('/events/:eventId/setpos', function (req, res) {
+    try {
+        var fname = req.body.name;
+        var fpos = req.body.pos;
+        var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+        if (fpos == "1") {
+            if (!('sound' in fdata.people)) {
+                fdata.people.sound = fname;
+            } else {
+                throw "lmao someone already chose that";
+            }
+        }
+        else if (fpos == "2") {
+            if (!('lights' in fdata.people)) {
+                fdata.people.lights = fname;
+            } else {
+                throw "lmao someone already chose that";
+            }
+        }
+        else if (fpos == "3") {
+            if (!('backstage' in fdata.people)) {
+                fdata.people.backstage = fname;
+            } else {
+                throw "lmao someone already chose that";
+            }
+        }
+        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
+        res.redirect(`/events/${req.params.eventId}`);
+    } catch (e) {
+        res.send(e);
+    }
+})
+
+//redirects to events
+app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    console.log(ip);
     res.redirect("/events");
 })
+
+//page that has a list of events
 app.get("/events", function (req, res) { //LIST OF EVENTS
     makeel();
     var el = loadevent();
-    console.log(el);
     res.render("index", { els: el.events });
+})
+
+//create eent admin only
+app.get("/createevent", function (req, res) {
+    res.sendFile("/views/createevent.html", { root: __dirname })
 })
 
 function loadevent() {
