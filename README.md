@@ -4,21 +4,21 @@
   
  
 ## How to Use:
-    - Clone using Link
-    - Configure port (Default is 80)
-    - Website should be hosted at http://127.0.0.1/
-    - Create events at: http://127.0.0.1/createevent
-    - Event List at: http://127.0.0.1/events
+  - Clone using Link
+  - Configure port (Default is 80)
+  - Website should be hosted at http://127.0.0.1/
+  - Create events at: http://127.0.0.1/createevent
+  - Event List at: http://127.0.0.1/events
 
 LIVE DEMO AT [HERE](http://138.197.60.43/)
   
 ## Current Features:
-    - Sign up for events
-    - Create event (Crew Chief only)
-    - See list of events (Sorted by Recently Added)
-    - See details of events & displays who is working events
-    - List of events automatically updates as soon as event is created by Crew Chief
-    - Automatically rejects requests to sign up for spot that is already taken
+  - Sign up for events
+  - Create event (Crew Chief only)
+  - See list of events (Sorted by Recently Added)
+  - See details of events & displays who is working events
+  - List of events automatically updates as soon as event is created by Crew Chief
+  - Automatically rejects requests to sign up for spot that is already taken
 
 ## Future Features:
     - [ ] Unsign up for events
