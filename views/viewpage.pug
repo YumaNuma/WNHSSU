@@ -21,4 +21,6 @@ link(rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css')
       br
       | Backstage - #{datai.people.backstage}
   footer.w3-container.w3-green
-    h5 LOCATION: #{datai.loc}
+    h5 LOCATION: #{datai.loc} 
+a(href='/events/' + datai.id + '/signup')
+  button.w3-btn.w3-green Click here to sign up for this event

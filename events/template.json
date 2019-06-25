@@ -1,5 +1,6 @@
 {
   "name": "templateevent",
+  "id":  "idi",
   "date": {
     "month": "monthi",
     "day": "dayi"
@@ -8,8 +9,6 @@
   "pos": "posi",
   "location": "loci",
   "people": {
-    "sound": "",
-    "lights": "",
-    "backstage": ""
+
   }
 }
