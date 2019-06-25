@@ -21,9 +21,9 @@ LIVE DEMO AT [HERE](http://138.197.60.43/)
   - Automatically rejects requests to sign up for spot that is already taken
 
 ## Future Features:
-    - [ ] Unsign up for events
-    - [ ] Waitlist
-    - [ ] Delete event page (Crew Chief only
+  - [ ] Unsign up for events
+  - [ ] Waitlist
+  - [ ] Delete event page (Crew Chief only
 
 
 ## Backstory:
