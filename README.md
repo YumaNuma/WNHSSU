@@ -39,7 +39,7 @@ LIVE DEMO AT [HERE](http://138.197.60.43/)
   day,
   time,
   pn (positions needed) (only has 3 allowed values, 1 = sound only, 2 = sound and lights, 3 = sound and lights and backstage),
-  location
+  location,
   Example of a valid POST url is http://hostname:3000/events/addnew?id=1242&?name=biggiecheeselmao&?month=09&?day=23&?time=5:30?pn=1
   `
   
