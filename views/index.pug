@@ -1,7 +1,22 @@
 doctype html
+title Williamsville North Crew Calendar
+meta(name='viewport' content='width=device-width, initial-scale=1')
+link(rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css')
+link(rel='stylesheet' href='https://www.w3schools.com/lib/w3-colors-win8.css')
 head
-  title biggie cheese
-ul
-   each event in els
-     li
-       a(href='/events/'+ event.id) #{event.name}
+  style.
+    .hov {
+    margin:auto;
+    }
+    body {
+    background-color:#8bc34a;
+    }
+    a {
+    text-decoration:none;
+    }
+.w3-container
+each event in els
+  a(href='/events/' + event.id)
+   .hov.w3-section.w3-card-1.w3-hover-shadow(style='width:50%;')
+    header.w3-container.w3-khaki.w3-border.w3-topbar
+      h1 #{event.name}

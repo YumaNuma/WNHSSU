@@ -1,8 +1,15 @@
-{"name" : "templateevent",
-    "date" :{
-        "month": "monthi",
-        "day": "dayi"
-    },
-    "time" : "timei",
-    "pos" : "posi",
-    "people" : ""}
+{
+  "name": "templateevent",
+  "date": {
+    "month": "monthi",
+    "day": "dayi"
+  },
+  "time": "timei",
+  "pos": "posi",
+  "location": "loci",
+  "people": {
+    "sound": "",
+    "lights": "",
+    "backstage": ""
+  }
+}

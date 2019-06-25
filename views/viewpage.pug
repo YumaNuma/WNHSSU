@@ -1,0 +1,24 @@
+doctype html
+title #{datai.name}
+meta(name='viewport' content='width=device-width, initial-scale=1')
+link(rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css')
+.w3-card-4.w3-display-middle(style='width:50%;')
+  header.w3-container.w3-yellow
+    h1 #{datai.name}
+  .w3-container
+    p
+      | Date: #{datai.date.month}/#{datai.date.day}/#{yeari}
+      br
+      | Time: #{datai.time}
+      br
+      | Positions Needed: #{datai.pos}
+      br
+      | Who is currently working it: 
+      br
+      | Sound - #{datai.people.sound} 
+      br
+      | Lights - #{datai.people.lights} 
+      br
+      | Backstage - #{datai.people.backstage}
+  footer.w3-container.w3-green
+    h5 LOCATION: #{datai.loc}
