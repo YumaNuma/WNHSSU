@@ -18,7 +18,7 @@ const fs = require("fs");//FILE SYSTEM
 
 //begin of global variables
 var app = express();
-var port = 3000 || process.env.port;//PORT
+var port = 80 || process.env.port;//PORT
 var filedir;//DIRECTORY OF FILE
 var nf;
 var ide, name, month, date, time, pn, loc; //PARAMETERS 
@@ -150,6 +150,13 @@ app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(ip);
     res.redirect("/events");
+    var ua = req.header('user-agent');
+    // Check the user-agent string to identyfy the device. 
+    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile|ipad|android|android 3.0|xoom|sch-i800|playbook|tablet|kindle/i.test(ua)) {
+        res.sendfile(__dirname + '/mobile.html');
+    } else {
+        res.sendfile(__dirname + '/index.html');
+    }
 })
 
 //page that has a list of events
