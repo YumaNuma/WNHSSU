@@ -8,17 +8,23 @@ head
     .hov {
     margin:auto;
     }
-    body {
-    background-color:#8bc34a;
-    }
     a {
     text-decoration:none;
     }
+    body {
+    background-image: linear-gradient(to right, yellow , green);
+    }
+    div {
+    background-image: linear-gradient(to right, yellow , green)
+    }
+center
+  div.w3-container.w3-white
+    h1 Event List
 .w3-container
 each event in els
   a(href='/events/' + event.id)
-   .hov.w3-section.w3-card-1.w3-hover-shadow(style='width:50%;')
-    header.w3-container.w3-khaki.w3-border.w3-topbar
+   .hov.w3-section.w3-card-1.w3-hover-shadow.w3-animate-top(style='width:50%;')
+    header.w3-container.w3-border.w3-topbar
       h1 #{event.name}
 else
   h1.w3-display-middle.w3-xxlarge There are no upcoming Events

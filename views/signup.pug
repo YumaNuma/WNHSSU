@@ -3,18 +3,27 @@ title Sign Up
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='https://www.w3schools.com/w3css/4/w3.css')
 link(rel='stylesheet' href='https://www.w3schools.com/lib/w3-colors-win8.css')
-.w3-display-middle.w3-green
-  form(action="/events/" + datak + "/setpos" target='_self' method='POST')
+head
+  style.
+    body {
+    background-image: linear-gradient(to right, yellow , green);
+    }
+a(href='javascript:history.back()')
+  button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
+.w3-display-middle.w3-green.w3-card.w3-padding-24.w3-container
+  form.w3-container(action="/events/" + datak + "/setpos" target='_self' method='POST')
     h1 Name:
-    input(type='text' name='name')
+    input.w3-input.w3-animate-input(type='text' name='name')
     h2 Position:
-    input(type='radio' name='pos' value='1')
+    input.w3-radio(type='radio' name='pos' value='1')
     |  Sound
     br
-    input(type='radio' name='pos' value='2')
+    input.w3-radio(type='radio' name='pos' value='2')
     |  Lights
     br
-    input(type='radio' name='pos' value='3')
+    input.w3-radio(type='radio' name='pos' value='3')
     |  Backstage 
     br
-    input(type='submit' value='Submit')
+    br
+    input.w3-btn.w3-khaki.w3-xlarge(type='submit' value='Submit')
+    br
