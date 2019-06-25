@@ -21,7 +21,7 @@ var app = express();
 var port = 3000 || process.env.port;//PORT
 var filedir;//DIRECTORY OF FILE
 var nf;
-var ide, name, month, date, time, pn; //PARAMETERS 
+var ide, name, month, date, time, pn, loc; //PARAMETERS 
 var options;
 //end of global variables
 
@@ -39,6 +39,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     month = req.query.month; //e.g. ?month=09
     day = req.query.day; // e.g. ?day=24
     time = req.query.time; //e.g. ?time=5:30
+    loc = req.query.location;
     pn = req.query.pn; //positions needed e.g. ?pn=1-3
     nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATION
     console.log(ide + " " + name + " " + month + " " + day + " " + time + " " + pn);
@@ -50,6 +51,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
             replaceall(nf, "monthi", month);
             replaceall(nf, "dayi", day);
             replaceall(nf, "timei", time);
+            replaceall(nf, "loci", loc);
             if (pn = 1) {
                 replaceall(nf, "posi", "Sound Only");
             } else if (pn = 2) {
@@ -75,7 +77,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     makeel();
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
-    result.events.push({ "id": id1, "name": name1 })
+    result.events.unshift({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
     console.log(result);
 }
@@ -95,8 +97,10 @@ function makeel() {
     return;
 }
 app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
-    filedir =  __dirname + `/events/${req.params.eventId}.json`;
-    res.json(JSON.parse(fs.readFileSync(filedir)));
+    filedir = __dirname + `/events/${req.params.eventId}.json`;
+    var date = new Date().getFullYear().toString();
+    var datate = JSON.parse(fs.readFileSync(filedir));
+    res.render("viewpage", { datai: datate, yeari: date})
 })
 
 app.get("/", function(req, res) { //MAIN PAGE REDIRECT TO EVENTS
