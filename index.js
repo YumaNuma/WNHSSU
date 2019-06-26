@@ -121,21 +121,21 @@ app.post('/events/:eventId/setpos', function (req, res) {
             if (!('sound' in fdata.people)) {
                 fdata.people.sound = fname;
             } else {
-                throw "lmao someone already chose that";
+                throw "someone already chose that";
             }
         }
         else if (fpos == "2") {
             if (!('lights' in fdata.people)) {
                 fdata.people.lights = fname;
             } else {
-                throw "lmao someone already chose that";
+                throw "someone already chose that";
             }
         }
         else if (fpos == "3") {
             if (!('backstage' in fdata.people)) {
                 fdata.people.backstage = fname;
             } else {
-                throw "lmao someone already chose that";
+                throw "someone already chose that";
             }
         }
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
