@@ -152,11 +152,8 @@ app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
     res.redirect("/events");
     var ua = req.header('user-agent');
     // Check the user-agent string to identyfy the device. 
-    if (/mobile|iphone|ipod|android|blackberry|opera|mini|windows\sce|palm|smartphone|iemobile|ipad|android|android 3.0|xoom|sch-i800|playbook|tablet|kindle/i.test(ua)) {
-        res.sendfile(__dirname + '/mobile.html');
-    } else {
-        res.sendfile(__dirname + '/index.html');
-    }
+        res.sendFile(__dirname + '/index.html');
+   
 })
 
 //page that has a list of events
