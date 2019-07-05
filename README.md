@@ -1,4 +1,4 @@
-# Williamsville North High School Unofficial Event System
+# Event System for Stage Crews
   This system allows Crew Chief to create an event, allow Crew Members to sign up for events, and see an up-to-date list of events all from a mobile device or PC!
   The frontend is semi-mobile friendly, but all features 100% work on both mobile and PC.
   
