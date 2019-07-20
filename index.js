@@ -34,14 +34,15 @@ app.set('view engine', 'pug'); //SET THE VIEW ENGINE
 
 
 app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
-    ide = req.query.ide; //e.g. ?id=127852
-    name = req.query.name; //e.g. ?name=winterconcert
-    month = req.query.month; //e.g. ?month=09
-    day = req.query.day; // e.g. ?day=24
-    time = req.query.time; //e.g. ?time=5:30
-    loc = req.query.loca;
-    pn = req.query.pn; //positions needed e.g. ?pn=1-3
+    ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
+    name = req.query.name || req.body.name; //e.g. ?name=winterconcert
+    month = req.query.month || req.body.month; //e.g. ?month=09
+    day = req.query.day || req.body.day; // e.g. ?day=24
+    time = req.query.time || req.body.time; //e.g. ?time=5:30
+    loc = req.query.loc || req.body.loc;
+    pn = req.query.pn || req.body.pn; //positions needed e.g. ?pn=1-3
     nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATION
+
     console.log(ide + " " + name + " " + month + " " + day + " " + time + " " + pn);
     try {
         if (!fs.existsSync(nf)) {
@@ -64,7 +65,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
             }
             // end
             addtofile(ide, name); //add to event list 
-            res.send("REQUEST SUCCESSFUL"); //result send back status
+            res.send(`REQUEST SUCCESSFUL. ID:  + ${ide} + . Write this down. <br><a href='/events/${ide}'>Click here to go to the event</a><br><a href='/'>Click here to go to the home page</a>`); //result send back status
         } else {
             throw "FILE EXISTS";
         }
@@ -72,7 +73,6 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
         console.log(e);
         res.send("Request unsuccessful. \n Error Log: " + e);
     } 
-
     res.end(); 
 })
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
@@ -150,10 +150,7 @@ app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     console.log(ip);
     res.redirect("/events");
-    var ua = req.header('user-agent');
-    // Check the user-agent string to identyfy the device. 
-        res.sendFile(__dirname + '/index.html');
-   
+ 
 })
 
 //page that has a list of events
