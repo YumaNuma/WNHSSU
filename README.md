@@ -19,12 +19,13 @@ LIVE DEMO AT [HERE](http://138.197.60.43/)
   - See details of events & displays who is working events
   - List of events automatically updates as soon as event is created by Crew Chief
   - Automatically rejects requests to sign up for spot that is already taken
+  - Delete event page (Crew Chief only)
+  - Automatically rejects duplicate sign ups, and same person sign ups for multiple positions 
+  - Automatically hides unneeded positions
 
 ## Future Features:
   - [ ] Unsign up for events
   - [ ] Waitlist
-  - [ ] Delete event page (Crew Chief only
-
 
 ## Backstory:
   I made this system cause I was going crazy not knowing what events there were or who was working them or if someone was already working them. So I just decided to make my own system and hopefully have it implemented into the stage crew. This was developed by me, Zaid, through tears and my last remaining brain cells right after finals week. This could use a bit of refactoring, which I will attempt my best to do. I welcome contributors cause I am far from perfect and anyone is welcome to download this and use it for their own school or whatever.
