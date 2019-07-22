@@ -18,7 +18,7 @@ const fs = require("fs");//FILE SYSTEM
 
 //begin of global variables
 var app = express();
-var port = 80 || process.env.port;//PORT
+var port = 443;//PORT
 var filedir;//DIRECTORY OF FILE
 var nf;
 var ide, name, month, date, time, pn, loc; //PARAMETERS 
