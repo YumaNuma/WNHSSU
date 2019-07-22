@@ -2,11 +2,14 @@ doctype html
 title Sign Up
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
-link(rel='stylesheet' href='https://www.w3schools.com/lib/w3-colors-win8.css')
+link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
 head
   style.
     body {
     background-image: linear-gradient(to right, yellow , green);
+    }
+    p {
+    font-family: 'Roboto', sans-serif;
     }
 a(href='javascript:history.back()')
   button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
@@ -16,12 +19,14 @@ a(href='javascript:history.back()')
       // Form Name
       legend.w3-text-red.w3-jumbo Signup for event
       // Text input
-      label.w3-xlarge(for='name') Name
+      b
+        label.w3-xlarge(for='name') Name
       br
-      input#name.w3-input.w3-border(name='name' type='text' placeholder='event name' required='')
+      input#name.w3-input.w3-border(name='name' type='text' placeholder='Your Name' required='')
       br
       div
-        label.w3-xlarge(for='pn') Position
+        b
+          label.w3-xlarge(for='pn') Position
         label(for='pn-0')
           br
           input#pn-0.w3-radio(type='radio' name='pn' value='1' checked='checked')
