@@ -5,7 +5,7 @@
  
 ## How to Use:
   - Clone using Link
-  - Configure port (Default is 80)
+  - Configure port (Default is 80, change to 443 for strict HTTPS)
   - Website should be hosted at http://127.0.0.1/
   - Create events at: http://127.0.0.1/createevent
   - Event List at: http://127.0.0.1/events
