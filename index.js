@@ -96,7 +96,7 @@ app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
 })
 app.post('/events/:eventId/deletecon', function (req, res) {
-    fs.unlinkSync(`/events/${req.params.eventId}.json`);
+    fs.unlinkSync(__dirname + `/events/${req.params.eventId}.json`);
     var a = JSON.parse(fs.readFileSync(__dirnane + "/events/eventlist.json"));
     for (i = 0; i < a.event.length; i++) {
         if (a.events[i].id == req.params.eventId) {
