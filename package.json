@@ -13,6 +13,7 @@
     "express": "^4.17.1",
     "path": "^0.12.7",
     "pug": "^2.0.4",
-    "replace-in-file": "^4.1.0"
+    "replace-in-file": "^4.1.0",
+    "request": "^2.88.0"
   }
 }

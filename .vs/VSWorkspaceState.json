@@ -1,9 +1,7 @@
 {
   "ExpandedNodes": [
     "",
-    "\\events",
-    "\\views"
+    "\\events"
   ],
-  "SelectedNode": "\\events\\template.json",
   "PreviewInSolutionExplorer": false
 }
