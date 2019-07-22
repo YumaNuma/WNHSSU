@@ -26,9 +26,11 @@ a(href='/')
       | Who is currently working it: 
       br
       | Sound - #{datai.people.sound} 
-      br
-      | Lights - #{datai.people.lights} 
-      br
-      | Backstage - #{datai.people.backstage}
+      unless datai.pos == "Sound Only"
+        br
+        |Lights - #{datai.people.lights} 
+      unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
+        br
+        | Backstage - #{datai.people.backstage}
   footer.w3-container.w3-green
     h5 LOCATION: #{datai.location} 
