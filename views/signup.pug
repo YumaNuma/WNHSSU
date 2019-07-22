@@ -27,16 +27,17 @@ a(href='javascript:history.back()')
       div
         b
           label.w3-xlarge(for='pos') Position
-        label(for='pn-0')
-          br
-          input#pn-0.w3-radio(type='radio' name='pos' value='1' checked='checked')
+        unless 'sound' in datai.people
+          label(for='pn-0')
+            br
+            input#pn-0.w3-radio(type='radio' name='pos' value='1' checked='checked')
           | Sound
-        unless datai.pos == "Sound Only"
+        unless datai.pos == "Sound Only" || 'lights' in datai.people
           label(for='pn-1')
             br
             input#pn-1.w3-radio(type='radio' name='pos' value='2')
             | Lights
-        unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
+        unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights" || 'backstage' in datai.people
           label(for='pn-2')
             br
             input#pn-2.w3-radio(type='radio' name='pos' value='3')
