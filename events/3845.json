@@ -1,0 +1,14 @@
+{
+  "name": "Test 2",
+  "id":  "3845",
+  "date": {
+    "month": "October",
+    "day": "25th"
+  },
+  "time": "2:25",
+  "pos": "Sound & Lights",
+  "location": "Auditorium",
+  "people": {
+
+  }
+}

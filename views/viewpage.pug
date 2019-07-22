@@ -13,17 +13,21 @@ br
 a(href='/')
   button.w3-btn.w3-green.w3-mobile Go back home
 .w3-card-4.w3-mobile.w3-animate-top(style='width:50%; margin:auto')
-  header.w3-container.w3-yellow
-    h1 #{datai.name}
-  .w3-container.w3-white
-    p
+  header.w3-container.w3-light-grey
+    b
+      p.w3-xxxlarge.w3-text-red #{datai.name}
+  .w3-container.w3-light-grey.w3-border
+    p.w3-large
       | Date: #{datai.date.month} #{datai.date.day}, #{yeari}
       br
       | Time: #{datai.time}
       br
-      | Positions Needed: #{datai.pos}
-      br
+      b
+        | Positions Needed: #{datai.pos}
+  footer.w3-container.w3-light-grey 
+    p.w3-xlarge
       | Who is currently working it: 
+      br
       br
       | Sound - #{datai.people.sound} 
       unless datai.pos == "Sound Only"
@@ -32,5 +36,5 @@ a(href='/')
       unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
         br
         | Backstage - #{datai.people.backstage}
-  footer.w3-container.w3-green
-    h5 LOCATION: #{datai.location} 
+      b
+        p.w3-xlarge LOCATION: #{datai.location} 

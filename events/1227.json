@@ -1,0 +1,14 @@
+{
+  "name": "Test 3",
+  "id":  "1227",
+  "date": {
+    "month": "August",
+    "day": "3rd"
+  },
+  "time": "7:30",
+  "pos": "Sound & Lights & Backstage",
+  "location": "Auditorium",
+  "people": {
+
+  }
+}
