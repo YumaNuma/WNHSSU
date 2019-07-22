@@ -27,6 +27,7 @@ var options;
 
 //begin of settings for express
 app.use(bodyParser.json()); //USE BODYPARSER
+app.use(express.static(__dirname + '/views'));
 app.use(bodyParser.urlencoded({extended: true}));
 app.set('views', __dirname + '/views'); //SET THE VIEW FOLDER
 app.set('view engine', 'pug'); //SET THE VIEW ENGINE
@@ -41,9 +42,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     time = req.query.time || req.body.time; //e.g. ?time=5:30
     loc = req.query.loc || req.body.loc;
     pn = req.query.pn || req.body.pn; //positions needed e.g. ?pn=1-3
-    nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATION
-
-    console.log(ide + " " + name + " " + month + " " + day + " " + time + " " + pn);
+    nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATIONs
     try {
         if (!fs.existsSync(nf)) {
             fs.copyFileSync(__dirname + "/events/template.json", nf);
@@ -76,7 +75,6 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     res.end(); 
 })
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
-    makeel();
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     result.events.unshift({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
@@ -90,13 +88,6 @@ function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     replace.sync(options);
 }
 
-function makeel() {
-    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
-        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
-    }
-    return;
-}
-
 //the event page
 app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     filedir = __dirname + `/events/${req.params.eventId}.json`;
@@ -104,7 +95,22 @@ app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     var datate = JSON.parse(fs.readFileSync(filedir));
     res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
 })
-
+app.post('/events/:eventId/deletecon', function (req, res) {
+    fs.unlinkSync(`/events/${req.params.eventId}.json`);
+    var a = JSON.parse(fs.readFileSync(__dirnane + "/events/eventlist.json"));
+    for (i = 0; i < a.event.length; i++) {
+        if (a.events[i].id == req.params.eventId) {
+            delete a.events[i];
+        }
+    }
+    fs.writeFileSync(`/events/${req.params.eventId}.json`, a);
+    console.log("Event deleted successfully");
+    res.redirect("/events")
+})
+app.get('/events/:eventId/delete', function (req, res) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
+    res.sendFile("/views/delete.html", { root: __dirname });
+})
 //the signup for the event page
 app.get('/events/:eventId/signup', function (req, res) { //signup
     var fid = req.params.eventId;
@@ -117,25 +123,52 @@ app.post('/events/:eventId/setpos', function (req, res) {
         var fname = req.body.name;
         var fpos = req.body.pos;
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+        fname = capitalize(fname);
         if (fpos == "1") {
             if (!('sound' in fdata.people)) {
-                fdata.people.sound = fname;
+                if (fname == fdata.people.lights) {
+                    throw "You cannot sign up for multiple things"
+                } else if (fname == fdata.people.backstage) {
+                    throw "You cannot sign up for multiple things"
+                } else {
+                    fdata.people.sound = fname;
+                }
             } else {
                 throw "someone already chose that";
             }
         }
         else if (fpos == "2") {
-            if (!('lights' in fdata.people)) {
-                fdata.people.lights = fname;
+            if (!(fdata.pos == "Sound Only")) {
+                if (!('lights' in fdata.people)) {
+                    if (fname == fdata.people.sound) {
+                        throw "You cannot sign up for multiple things"
+                    } else if (fname == fdata.people.backstage) {
+                        throw "You cannot sign up for multiple things"
+                    } else {
+                        fdata.people.lights = fname;
+                    }
+                } else {
+                    throw "someone already chose that";
+                }
             } else {
-                throw "someone already chose that";
+                throw "Lights is not needed for this event"
             }
         }
         else if (fpos == "3") {
-            if (!('backstage' in fdata.people)) {
-                fdata.people.backstage = fname;
+            if (!(fdata.pos == "Sound Only" || fdata == "Sound & Lights")) {
+                if (!('backstage' in fdata.people)) {
+                    if (fname == fdata.people.sound) {
+                        throw "You cannot sign up for multiple things"
+                    } else if (fname == fdata.people.lights) {
+                        throw "You cannot sign up for multiple things"
+                    } else {
+                        fdata.people.backstage = fname;
+                    }
+                } else {
+                    throw "someone already chose that";
+                }
             } else {
-                throw "someone already chose that";
+                throw "Backstage is not needed for this event";
             }
         }
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
@@ -145,18 +178,46 @@ app.post('/events/:eventId/setpos', function (req, res) {
     }
 })
 
-//redirects to events
+//redirects to eventss
 app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
-    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-    console.log(ip);
+    try {
+        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        logip(ip);
+    } catch (e) {
+        console.log("Error logging IP. Log: " + e)
+    }
     res.redirect("/events");
- 
 })
 
+//log the ip of a visitor
+function logip(a) {
+    var cond = 0;
+    var content = JSON.parse(fs.readFileSync('log.json'));
+    if (content.ips.length > 0) { //checks if ip is in the system
+        for (i = 0; i < content.ips.length; i++) {
+            if (content.ips[i].ip == a) {
+                content.ips[i].count += 1;
+                cond = 1;
+            }
+        }
+    }
+    if (cond == 0) {
+        content.ips.push({ "ip": a, "count": 1});
+    } 
+    fs.writeFileSync("log.json", JSON.stringify(content));
+    }
+
+//Capitalize the first letter of a word
+function capitalize(s) {
+    return s.charAt(0).toUpperCase() + s.slice(1);
+}
+ 
 //page that has a list of events
 app.get("/events", function (req, res) { //LIST OF EVENTS
-    makeel();
-    var el = loadevent();
+    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
+        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
+    }
+    var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
     res.render("index", { els: el.events });
 })
 
@@ -165,9 +226,6 @@ app.get("/createevent", function (req, res) {
     res.sendFile("/views/createevent.html", { root: __dirname })
 })
 
-function loadevent() {
-    return JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
-}
 app.listen(port, function() { //START WEBSERVER
-    console.log(`PORT ${port}`);
+    console.log(`The server has started on ${port}`);
 })
