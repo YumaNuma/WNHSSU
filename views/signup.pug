@@ -10,20 +10,38 @@ head
     }
 a(href='javascript:history.back()')
   button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
-.w3-display-middle.w3-green.w3-card.w3-padding-24.w3-container
-  form.w3-container(action="/events/" + datak + "/setpos" target='_self' method='POST')
-    h1 Name:
-    input.w3-input.w3-animate-input(type='text' name='name')
-    h2 Position:
-    input.w3-radio(type='radio' name='pos' value='1')
-    |  Sound
+form.w3-container.w3-card-4.w3-light-grey.w3-display-middle(action="/events/" + datai.id + "/setpos" target='_self' method='POST')
+  fieldset
+    // Form Name
+    legend.w3-text-red.w3-jumbo Signup for event
+    // Text input
+    label.w3-xlarge(for='name') Name
     br
-    input.w3-radio(type='radio' name='pos' value='2')
-    |  Lights
+    input#name.w3-input.w3-border(name='name' type='text' placeholder='event name' required='')
     br
-    input.w3-radio(type='radio' name='pos' value='3')
-    |  Backstage 
+    div
+      label.w3-xlarge(for='pn') Position
+      label(for='pn-0')
+        br
+        input#pn-0.w3-radio(type='radio' name='pn' value='1' checked='checked')
+        | Sound
+      unless datai.pos == "Sound Only"
+        label(for='pn-1')
+          br
+          input#pn-1.w3-radio(type='radio' name='pn' value='2')
+          | Sound &amp; Lights
+      unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
+        label(for='pn-2')
+          br
+          input#pn-2.w3-radio(type='radio' name='pn' value='3')
+          | Sound &amp; Lights &amp; Backstage
     br
-    br
-    input.w3-btn.w3-khaki.w3-xlarge(type='submit' value='Submit')
-    br
+    // Button
+    div
+      label(for='submit')
+      div
+        button#submit.w3-btn.w3-green.w3-xlarge(type='submit' name='submit') submit
+  br
+
+
+

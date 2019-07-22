@@ -75,6 +75,9 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     res.end(); 
 })
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
+    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
+        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
+    }
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     result.events.unshift({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
@@ -95,15 +98,15 @@ app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
     var datate = JSON.parse(fs.readFileSync(filedir));
     res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
 })
-app.post('/events/:eventId/deletecon', function (req, res) {
+app.post('/events/:eventId/delete', function (req, res) {
     fs.unlinkSync(__dirname + `/events/${req.params.eventId}.json`);
-    var a = JSON.parse(fs.readFileSync(__dirnane + "/events/eventlist.json"));
-    for (i = 0; i < a.event.length; i++) {
+    var a = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
+    for (i = 0; i < a.events.length; i++) {
         if (a.events[i].id == req.params.eventId) {
-            delete a.events[i];
+            a.events.splice(i, 1);
         }
     }
-    fs.writeFileSync(`/events/${req.params.eventId}.json`, a);
+    fs.writeFileSync(__dirname + `/events/eventlist.json`, JSON.stringify(a));
     console.log("Event deleted successfully");
     res.redirect("/events")
 })
@@ -113,8 +116,8 @@ app.get('/events/:eventId/delete', function (req, res) {
 })
 //the signup for the event page
 app.get('/events/:eventId/signup', function (req, res) { //signup
-    var fid = req.params.eventId;
-    res.render("signup", { datak: fid });
+    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    res.render("signup", { datai: datate });
 })
 
 //the post url where the data from the event signup page goes to
