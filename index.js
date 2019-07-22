@@ -127,6 +127,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
         var fpos = req.body.pos;
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
         fname = capitalize(fname);
+        console.log(`${fname} ${fpos} ${fdata}`)
         if (fpos == "1") {
             if (!('sound' in fdata.people)) {
                 if (fname == fdata.people.lights) {

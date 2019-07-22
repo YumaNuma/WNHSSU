@@ -14,7 +14,7 @@ head
 a(href='javascript:history.back()')
   button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
 .w3-animate-opacity
-  form.w3-display-middle.w3-container.w3-card-4.w3-light-grey(action="/events/" + datai.id + "/setpos" target='_self' method='POST')
+  form.w3-display-middle.w3-container.w3-card-4.w3-light-grey(action="/events/" + datai.id + "/setpos" method='POST')
     fieldset
       // Form Name
       legend.w3-text-red.w3-jumbo Signup for event
@@ -26,21 +26,21 @@ a(href='javascript:history.back()')
       br
       div
         b
-          label.w3-xlarge(for='pn') Position
+          label.w3-xlarge(for='pos') Position
         label(for='pn-0')
           br
-          input#pn-0.w3-radio(type='radio' name='pn' value='1' checked='checked')
+          input#pn-0.w3-radio(type='radio' name='pos' value='1' checked='checked')
           | Sound
         unless datai.pos == "Sound Only"
           label(for='pn-1')
             br
-            input#pn-1.w3-radio(type='radio' name='pn' value='2')
-            | Sound &amp; Lights
+            input#pn-1.w3-radio(type='radio' name='pos' value='2')
+            | Lights
         unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
           label(for='pn-2')
             br
-            input#pn-2.w3-radio(type='radio' name='pn' value='3')
-            | Sound &amp; Lights &amp; Backstage
+            input#pn-2.w3-radio(type='radio' name='pos' value='3')
+            | Backstage
       br
       // Button
       div
