@@ -78,7 +78,9 @@ app.get('/events/:eventId/signup', function (req, res) { //signup
     var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     res.render("signup", { datai: datate });
 })
-
+app.get('/events/:eventId/:position/delete', function (req, res) {
+    res.sendFile("remove.html", {root: __dirname});
+})
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -132,6 +134,36 @@ app.post('/events/:eventId/delete', function (req, res) {
     console.log("Event deleted successfully");
     res.redirect("/events")
 })
+app.post('/events/:eventId/:position/delete', function (req, res) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    try {
+        if (req.params.position == "sound") {
+            if (req.body.pass == data.people.soundpass) {
+                delete data.people.sound;
+                delete data.people.soundpass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        } else if (req.params.position == "lights") {
+            if (req.body.pass == data.people.lightpass) {
+                delete data.people.lights;
+                delete data.people.lightpass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        } else if (req.params.position == "backstage") {
+            if (req.body.pass == data.people.backstagepass) {
+                delete data.people.backstage;
+                delete data.people.backstagepass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        }
+        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+    } catch (e) {
+        res.render('error', { error: e });
+    }
+})
 
 //the post url where the data from the event signup page goes to
 app.post('/events/:eventId/setpos', function (req, res) {
@@ -139,6 +171,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
         var fname = req.body.name;
         var fpos = req.body.pos;
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+        var fpass = req.body.pass;
         fname = capitalize(fname);
         console.log(`${fname} ${fpos} ${fdata}`)
         if (fpos == "1") {
@@ -149,6 +182,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
                     throw "You cannot sign up for multiple things"
                 } else { 
                     fdata.people.sound = fname;
+                    fdata.people.soundpass = fpass;
                 }
             } else {
                 throw "someone already chose that";
@@ -163,6 +197,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
                         throw "You cannot sign up for multiple things"
                     } else {
                         fdata.people.lights = fname;
+                        fdata.people.lightpass = fpass;
                     }
                 } else {
                     throw "someone already chose that";
@@ -180,6 +215,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
                         throw "You cannot sign up for multiple things"
                     } else {
                         fdata.people.backstage = fname;
+                        fdata.people.backstagepass = fpass;
                     }
                 } else {
                     throw "someone already chose that";
