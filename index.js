@@ -129,7 +129,7 @@ app.post('/events/:eventId/delete', function (req, res) {
         }
     }
     fs.writeFileSync(__dirname + `/events/eventlist.json`, JSON.stringify(a));
-    res.redirect("/events/")
+    res.redirect("/events")
 })
 app.post('/events/:eventId/:position/delete', function (req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
@@ -138,8 +138,6 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.soundpass) {
                 delete data.people.sound;
                 delete data.people.soundpass;
-                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
-                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
@@ -147,8 +145,6 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.lightpass) {
                 delete data.people.lights;
                 delete data.people.lightpass;
-                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
-                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
@@ -156,12 +152,12 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.backstagepass) {
                 delete data.people.backstage;
                 delete data.people.backstagepass;
-                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
-                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
         }
+        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+        res.redirect(`/events/${req.params.eventId}`);
     } catch (e) {
         res.render('error', { error: e });
     }

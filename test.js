@@ -1,6 +1,6 @@
 const request = require('request')
 
-request.post('http://192.168.1.14:81/events/addnew', {
+request.post('https://stagecrew.yaznic.me/events/addnew', {
     json: {
         name: 'Test',
         month: 'September',
@@ -17,7 +17,7 @@ request.post('http://192.168.1.14:81/events/addnew', {
     console.log(`statusCode: ${res.statusCode}`)
     console.log(body)
     })
-request.post('http://192.168.1.14:81/events/addnew', {
+request.post('https://stagecrew.yaznic.me/events/addnew', {
     json: {
         name: 'Test 2',
         month: 'October',
@@ -34,7 +34,7 @@ request.post('http://192.168.1.14:81/events/addnew', {
     console.log(`statusCode: ${res.statusCode}`)
     console.log(body)
     })
-request.post('http://192.168.1.14:81/events/addnew', {
+request.post('https://stagecrew.yaznic.me/events/addnew', {
     json: {
         name: 'Test 3',
         month: 'August',
