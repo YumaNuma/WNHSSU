@@ -79,7 +79,7 @@ app.get('/events/:eventId/signup', function (req, res) { //signup
     res.render("signup", { datai: datate });
 })
 app.get('/events/:eventId/:position/delete', function (req, res) {
-    res.sendFile("remove.html", {root: __dirname});
+    res.sendFile("/views/remove.html", {root: __dirname});
 })
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
@@ -113,13 +113,11 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
             addtofile(ide, name); //add to event list 
             res.send(`REQUEST SUCCESSFUL. ID:  + ${ide} + . Write this down. <br><a href='/events/${ide}'>Click here to go to the event</a><br><a href='/'>Click here to go to the home page</a>`); //result send back status
         } else {
-            throw "FILE EXISTS";
+            throw "There is already an event with that ID";
         }
     } catch (e) {
-        console.log(e);
-        res.send("Request unsuccessful. \n Error Log: " + e);
+        res.render('error', { error: e });
     }
-    res.end();
 })
 
 app.post('/events/:eventId/delete', function (req, res) {
@@ -131,8 +129,7 @@ app.post('/events/:eventId/delete', function (req, res) {
         }
     }
     fs.writeFileSync(__dirname + `/events/eventlist.json`, JSON.stringify(a));
-    console.log("Event deleted successfully");
-    res.redirect("/events")
+    res.redirect("/events/")
 })
 app.post('/events/:eventId/:position/delete', function (req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
@@ -141,6 +138,8 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.soundpass) {
                 delete data.people.sound;
                 delete data.people.soundpass;
+                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
@@ -148,6 +147,8 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.lightpass) {
                 delete data.people.lights;
                 delete data.people.lightpass;
+                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
@@ -155,11 +156,12 @@ app.post('/events/:eventId/:position/delete', function (req, res) {
             if (req.body.pass == data.people.backstagepass) {
                 delete data.people.backstage;
                 delete data.people.backstagepass;
+                fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+                res.redirect(__dirname + `/events/${req.params.eventId}`);
             } else {
                 throw "Incorrect Passcode";
             }
         }
-        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
     } catch (e) {
         res.render('error', { error: e });
     }
@@ -173,7 +175,6 @@ app.post('/events/:eventId/setpos', function (req, res) {
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
         var fpass = req.body.pass;
         fname = capitalize(fname);
-        console.log(`${fname} ${fpos} ${fdata}`)
         if (fpos == "1") {
             if (!('sound' in fdata.people)) {
                 if (fname == fdata.people.lights) {
@@ -227,7 +228,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
         res.redirect(`/events/${req.params.eventId}`);
     } catch (e) {
-        res.send(e);
+        res.render('error', { error: e });
     }
 })
 
