@@ -18,13 +18,13 @@ LIVE DEMO AT [HERE](http://138.197.60.43/)
   - See list of events (Sorted by Recently Added)
   - See details of events & displays who is working events
   - List of events automatically updates as soon as event is created by Crew Chief
-  - Automatically rejects requests to sign up for spot that is already taken
+  - Automatically hides positions that are already signed up.
   - Delete event page (Crew Chief only)
-  - Automatically rejects duplicate sign ups, and same person sign ups for multiple positions 
+  - Automatically rejects same person sign ups for multiple positions 
   - Automatically hides unneeded positions
+  - Ability to unsign up for events
 
 ## Future Features:
-  - [ ] Unsign up for events
   - [ ] Waitlist
 
 ## Backstory:
