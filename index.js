@@ -33,8 +33,53 @@ app.set('views', __dirname + '/views'); //SET THE VIEW FOLDER
 app.set('view engine', 'pug'); //SET THE VIEW ENGINE
 //end of settings for express
 
+app.get("/events", function (req, res) { //LIST OF EVENTS
+    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
+        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
+    }
+    var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
+    res.render("index", { els: el.events });
+})
 
-app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
+//create eent admin only
+app.get("/createevent", function (req, res) {
+    res.sendFile("/views/createevent.html", { root: __dirname })
+})
+
+//the event page
+app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
+    filedir = __dirname + `/events/${req.params.eventId}.json`;
+    var date = new Date().getFullYear().toString();
+    var datate = JSON.parse(fs.readFileSync(filedir));
+    res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
+})
+
+//redirects to eventss
+app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
+    if (!fs.existsSync(__dirname + "/events/log.json")) {
+        fs.writeFileSync(__dirname + "/events/log.json", JSON.stringify({ "ips": [] }));
+        console.log("Log created")
+    }
+    try {
+        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+        logip(ip);
+    } catch (e) {
+        console.log("Error logging IP. Log: " + e)
+    }
+    res.redirect("/events");
+})
+
+app.get('/events/:eventId/delete', function (req, res) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
+    res.sendFile("/views/delete.html", { root: __dirname });
+})
+//the signup for the event page
+app.get('/events/:eventId/signup', function (req, res) { //signup
+    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    res.render("signup", { datai: datate });
+})
+
+app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
     month = req.query.month || req.body.month; //e.g. ?month=09
@@ -46,7 +91,7 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
     try {
         if (!fs.existsSync(nf)) {
             fs.copyFileSync(__dirname + "/events/template.json", nf);
-                        //following code replaces strings in the newly made file that is identical to the template
+            //following code replaces strings in the newly made file that is identical to the template
             replaceall(nf, "templateevent", name);
             replaceall(nf, "monthi", month);
             replaceall(nf, "dayi", day);
@@ -68,36 +113,13 @@ app.post("/events/addnew", function(req, res) { //MAIN POST FUNCTION - GENERATE 
         } else {
             throw "FILE EXISTS";
         }
-    } catch(e) {
+    } catch (e) {
         console.log(e);
         res.send("Request unsuccessful. \n Error Log: " + e);
-    } 
-    res.end(); 
+    }
+    res.end();
 })
-function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
-    if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
-        fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
-    }
-    var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
-    result.events.unshift({ "id": id1, "name": name1 })
-    fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
-}
-function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
-    options = {
-        "files": a,
-        "from": b,
-        "to": c
-    }
-    replace.sync(options);
-}
 
-//the event page
-app.get('/events/:eventId', function(req, res) { // RETRIEVE DATA OF EVENT
-    filedir = __dirname + `/events/${req.params.eventId}.json`;
-    var date = new Date().getFullYear().toString();
-    var datate = JSON.parse(fs.readFileSync(filedir));
-    res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
-})
 app.post('/events/:eventId/delete', function (req, res) {
     fs.unlinkSync(__dirname + `/events/${req.params.eventId}.json`);
     var a = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
@@ -109,15 +131,6 @@ app.post('/events/:eventId/delete', function (req, res) {
     fs.writeFileSync(__dirname + `/events/eventlist.json`, JSON.stringify(a));
     console.log("Event deleted successfully");
     res.redirect("/events")
-})
-app.get('/events/:eventId/delete', function (req, res) {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
-    res.sendFile("/views/delete.html", { root: __dirname });
-})
-//the signup for the event page
-app.get('/events/:eventId/signup', function (req, res) { //signup
-    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render("signup", { datai: datate });
 })
 
 //the post url where the data from the event signup page goes to
@@ -182,21 +195,11 @@ app.post('/events/:eventId/setpos', function (req, res) {
     }
 })
 
-//redirects to eventss
-app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
-    try {
-        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        logip(ip);
-    } catch (e) {
-        console.log("Error logging IP. Log: " + e)
-    }
-    res.redirect("/events");
-})
 
 //log the ip of a visitor
 function logip(a) {
     var cond = 0;
-    var content = JSON.parse(fs.readFileSync('log.json'));
+    var content = JSON.parse(fs.readFileSync(__dirname + '/events/log.json'));
     if (content.ips.length > 0) { //checks if ip is in the system
         for (i = 0; i < content.ips.length; i++) {
             if (content.ips[i].ip == a) {
@@ -208,27 +211,35 @@ function logip(a) {
     if (cond == 0) {
         content.ips.push({ "ip": a, "count": 1});
     } 
-    fs.writeFileSync("log.json", JSON.stringify(content));
+    fs.writeFileSync(__dirname + "/events/log.json", JSON.stringify(content));
     }
 
 //Capitalize the first letter of a word
 function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
- 
-//page that has a list of events
-app.get("/events", function (req, res) { //LIST OF EVENTS
+
+function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
-    var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
-    res.render("index", { els: el.events });
-})
-
-//create eent admin only
-app.get("/createevent", function (req, res) {
-    res.sendFile("/views/createevent.html", { root: __dirname })
-})
+    var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
+    result.events.unshift({ "id": id1, "name": name1 })
+    fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
+}
+function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
+    options = {
+        "files": a,
+        "from": b,
+        "to": c
+    }
+    replace.sync(options);
+}
+//page that has a list of events
+app.get('*', function (req, res) {
+    res.status(404);
+    res.redirect('/');
+});
 
 app.listen(port, function() { //START WEBSERVER
     console.log(`The server has started on ${port}`);
