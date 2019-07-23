@@ -12,7 +12,7 @@ a(href='/events/' + datai.id + '/signup')
 br
 a(href='/')
   button.w3-btn.w3-green.w3-mobile Go back home
-.w3-card-4.w3-mobile.w3-animate-top(style='width:50%; margin:auto')
+.w3-card-4.w3-mobile.w3-animate-opacity(style='width:50%; margin:auto')
   header.w3-container.w3-light-grey
     b
       p.w3-xxxlarge.w3-text-red #{datai.name}
@@ -30,11 +30,17 @@ a(href='/')
       br
       br
       | Sound - #{datai.people.sound} 
+      unless !('sound' in datai.people)
+        a.w3-large.w3-text-blue(href="/events/" + datai.id + "/sound/delete") delete
       unless datai.pos == "Sound Only"
         br
-        |Lights - #{datai.people.lights} 
+        |Lights - #{datai.people.lights}&nbsp;
+        unless !('lights' in datai.people)
+          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/lights/delete") delete
       unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
         br
-        | Backstage - #{datai.people.backstage}
+        | Backstage - #{datai.people.backstage}&nbsp;
+        unless !('backstage' in datai.people)
+          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") delete
       b
         p.w3-xxlarge LOCATION: #{datai.location} 
