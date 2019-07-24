@@ -11,14 +11,18 @@ a(href='/events/' + datai.id + '/signup')
   button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
 br
 a(href='/')
-  button.w3-btn.w3-green.w3-mobile Go back home
+  button.w3-btn.w3-green.w3-mobile.w3-xlarge.w3-section Go back home
+unless !isadmin
+  br
+  a(href='/events/' + datai.id + "/delete")
+    button.w3-btn.w3-green.w3-mobile Delete this event
 .w3-card-4.w3-mobile.w3-animate-opacity(style='width:50%; margin:auto')
   header.w3-container.w3-light-grey
     b
       p.w3-xxxlarge.w3-text-red #{datai.name}
   .w3-container.w3-light-grey.w3-border
     p.w3-xlarge
-      | Date: #{datai.date.month} #{datai.date.day}, #{yeari}
+      | Date: #{datai.date.month} #{datai.date.day}, #{datai.date.year}
       br
       | Time: #{datai.time}
       br

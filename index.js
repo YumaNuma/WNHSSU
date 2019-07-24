@@ -30,14 +30,11 @@ var options;
 //begin of settings for express
 app.use(helmet());
 app.use(function (req, res, next) {
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     //log the ip of a visitor
     try {
-        if (!fs.existsSync(__dirname + "/data/log.json")) {
-            fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
-            console.log("Log created")
-        }
         var content = JSON.parse(fs.readFileSync(__dirname + '/data/log.json'));
-        content.log.push({ "ip": a, "webpage": req.path, "time": new Date() });
+        content.log.push({ "ip": ip, "webpage": req.path, "time": new Date() });
         fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify(content));
     } catch (e) {
         console.log("error:" + e);
@@ -78,10 +75,9 @@ app.get("/createevent", function (req, res) {
 
 //the event page
 app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
-    filedir = __dirname + `/events/${req.params.eventId}.json`;
-    var date = new Date().getFullYear().toString();
-    var datate = JSON.parse(fs.readFileSync(filedir));
-    res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
+    var admin = authenticated(req);
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    res.render("viewpage", { datai: data, isadmin: admin})
 })
 
 app.get('/login', function (req, res) {
@@ -89,7 +85,7 @@ app.get('/login', function (req, res) {
 })
 app.post('/login', function (req, res) {
     if (req.body.pass == "6456") {
-        res.cookie("auth", "authenticated", { maxAge: 90000 });
+        res.cookie("auth", "authenticated", { maxAge: 86400000});
         res.redirect("/panel");
     }
 })
@@ -128,6 +124,7 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
             replaceall(nf, "timei", time);
             replaceall(nf, "loci", loc);
             replaceall(nf, "idi", ide);
+            replaceall(nf, "yeari", new Date().getFullYear().toString())
             if (pn == 1) {
                 replaceall(nf, "posi", "Sound Only");
             } else if (pn == 2) {
@@ -289,6 +286,10 @@ function generate() {
     }
     if (!fs.existsSync("data")) {
         fs.mkdirSync("data");
+    }
+    if (!fs.existsSync(__dirname + "/data/log.json")) {
+        fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
+        console.log("Log created")
     }
 }
 //page that has a list of events
