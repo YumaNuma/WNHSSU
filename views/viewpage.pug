@@ -51,13 +51,13 @@ unless !isadmin
         | Backstage - #{datai.people.backstage}&nbsp;
         unless !('backstage' in datai.people)
           a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") unsignup
-      unless !('waitlist' in datai.people)
+      unless !(('waitlist' in datai.people) && ('sound' in datai.people.waitlist || 'lights' in datai.people.waitlist || 'backstage' in datai.people.waitlist  ))
         br
         p.w3-xlarge Waitlist:
-         unless !('sound' in data.people.waitlist) 
+         unless !(datai.people.waitlist.sound.length > 0) 
            br
            | Sound: 
-           each person in data.people.waitlist["sound"]
-             | #{person}}
+           each person in datai.people.waitlist["sound"]
+             |  #{person.name},
       b
         p.w3-xxlarge LOCATION: #{datai.location} 
