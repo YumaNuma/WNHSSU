@@ -14,7 +14,7 @@ head
 a(href='javascript:history.back()')
   button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
 .w3-animate-opacity
-  form.w3-display-middle.w3-container.w3-card-4.w3-light-grey(action="/events/" + datai.id + "/setpos" method='POST')
+  form.w3-display-middle.w3-container.w3-card-4.w3-light-grey.w3-mobile(action="/events/" + datai.id + "/setpos" method='POST')
     fieldset
       // Form Name
       legend.w3-text-red.w3-jumbo Signup for event
@@ -46,7 +46,7 @@ a(href='javascript:history.back()')
       br 
       label(for='pass') 4-digit password (Incase you would like to remove yourself)
         br
-        input#name.w3-input.w3-border(name='pass' type='text' placeholder='4 Letter password' maxlength="4" required)
+        input#name.w3-input.w3-border(name='pass' type='text' placeholder='4 Letter password' minlength="4" maxlength="4" required)
       br
       // Button
       div
