@@ -56,6 +56,11 @@ app.get("/panel", function (req, res) {
         res.redirect('/login');
     }
 })
+
+app.get('/events/:eventId/waitlist', function (req, res) {
+    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
+    res.render('waitlist', { datai: datate });
+})
 app.get("/events", function (req, res) { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
@@ -127,7 +132,19 @@ app.get('/events/:eventId/:position/delete', function (req, res) {
 })
 app.get('/events/:eventId/waitlist', function (req, res) {
     res.sendFile('/views/waitlist.html', { root: __dirname });
-})
+});
+
+function checkwaitlist(a, p) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
+    if (p == "sound") {
+
+    } else if (p == "lights") {
+
+    } else if (p == "backstage") {
+
+    }
+}
+
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -248,6 +265,69 @@ app.post('/events/:eventId/setpos', function (req, res) {
     }
 })
 
+app.post('/events/:eventId/waitlist', function (req, res) {
+    try {
+        var fname = req.body.name;
+        var fpos = req.body.pos;
+        var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+        var fpass = req.body.pass;
+        fname = capitalize(fname);
+        if (!"waitlist" in fdata.people) {
+            fdata.people.waitlist = {};
+        }
+        if (fpos == "1") {
+            if ("sound" in fdata.people.waitlist) {
+                for (i = 0; i < fdata.people.waitlist.sound.length; i++) {
+                    if (fdata.people.waitlist.sound[i].name == fname) {
+                        throw "You cannot join the waitlist twice";
+                    }
+                }
+                fdata.people.waitlist.sound.push({ "name": fname, "pass": fpass });
+            } else {
+                fdata.people.waitlist.sound = [];
+                for (i = 0; i < fdata.people.waitlist.sound.length; i++) {
+                    if (fdata.people.waitlist.sound[i].name == fname) {
+                        throw "You cannot join the waitlist twice";
+                    }
+                }
+                fdata.people.waitlist.sound.push({ "name": fname, "pass": fpass });
+            }
+        }
+        else if (fpos == "2") {
+            if ("lights" in fdata.people.waitlist) {
+                for (i = 0; i < fdata.people.waitlist.lights.length; i++) {
+                    if (fdata.people.waitlist.lights[i].name == fname) {
+                        throw "You cannot join the waitlist twice";
+                    }
+                }
+                fdata.people.waitlist.lights.push({ "name": fname, "pass": fpass });
+            } else {
+                fdata.people.waitlist.lights = [];
+                for (i = 0; i < fdata.people.waitlist.lights.length; i++) {
+                    if (fdata.people.waitlist.lights[i].name == fname) {
+                        throw "You cannot join the waitlist twice";
+                    }
+                }
+                fdata.people.waitlist.lights.push({ "name": fname, "pass": fpass });
+            }
+        }
+        else if (fpos == "3") {
+            fdata.people.waitlist.backstage = [];
+            for (i = 0; i < fdata.people.waitlist.backstage.length; i++) {
+                if (fdata.people.waitlist.backstage[i].name == fname) {
+                    throw "You cannot join the waitlist twice";
+                }
+            }
+            fdata.people.waitlist.backstage.push({ "name": fname, "pass": fpass });
+        }
+        }
+        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
+        res.redirect(`/events/${req.params.eventId}`);
+    } catch (e) {
+        res.render('error', { error: e });
+    }
+})
+
 //Capitalize the first letter of a word
 function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
@@ -287,18 +367,7 @@ function generate() {
         console.log("Log created")
     }
 }
-function checkwaitlist(a, p) {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
-    if (p == "sound") {
-        if () {
 
-        }
-    } else if (p == "lights") {
-
-    } else if (p == "backstage") {
-
-    }
-}
 function unsignup(req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
