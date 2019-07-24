@@ -77,7 +77,7 @@ app.get("/createevent", function (req, res) {
 app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
     var admin = authenticated(req);
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render("viewpage", { datai: data, isadmin: admin})
+    res.render("viewpage", { datai: data, isadmin: admin })
 })
 
 app.get('/login', function (req, res) {
@@ -85,7 +85,7 @@ app.get('/login', function (req, res) {
 })
 app.post('/login', function (req, res) {
     if (req.body.pass == "6456") {
-        res.cookie("auth", "authenticated", { maxAge: 86400000});
+        res.cookie("auth", "authenticated", { maxAge: 86400000 });
         res.redirect("/panel");
     }
 })
@@ -103,7 +103,30 @@ app.get('/events/:eventId/signup', function (req, res) { //signup
     res.render("signup", { datai: datate });
 })
 app.get('/events/:eventId/:position/delete', function (req, res) {
-    res.sendFile("/views/remove.html", { root: __dirname });
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    if (authenticated(req)) {
+        try {
+            if (req.params.position == "sound") {
+                delete data.people.sound;
+                delete data.people.soundpass;
+            } else if (req.params.position == "lights") {
+                delete data.people.lights;
+                delete data.people.lightpass;
+            } else if (req.params.position == "backstage") {
+                delete data.people.backstage;
+                delete data.people.backstagepass;
+            }
+            res.redirect(`/events/${req.params.eventId}`);
+            fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data))
+        } catch (e) {
+            res.send(e);
+        }
+    } else {
+        res.sendFile("/views/remove.html", { root: __dirname });
+    }
+})
+app.get('/events/:eventId/waitlist', function (req, res) {
+    res.sendFile('/views/waitlist.html', { root: __dirname });
 })
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
@@ -157,35 +180,7 @@ app.post('/events/:eventId/delete', function (req, res) {
     res.redirect("/events")
 })
 app.post('/events/:eventId/:position/delete', function (req, res) {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    try {
-        if (req.params.position == "sound") {
-            if (req.body.pass == data.people.soundpass) {
-                delete data.people.sound;
-                delete data.people.soundpass;
-            } else {
-                throw "Incorrect Passcode";
-            }
-        } else if (req.params.position == "lights") {
-            if (req.body.pass == data.people.lightpass) {
-                delete data.people.lights;
-                delete data.people.lightpass;
-            } else {
-                throw "Incorrect Passcode";
-            }
-        } else if (req.params.position == "backstage") {
-            if (req.body.pass == data.people.backstagepass) {
-                delete data.people.backstage;
-                delete data.people.backstagepass;
-            } else {
-                throw "Incorrect Passcode";
-            }
-        }
-        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
-        res.redirect(`/events/${req.params.eventId}`);
-    } catch (e) {
-        res.render('error', { error: e });
-    }
+    unsignup(req, res);
 })
 
 //the post url where the data from the event signup page goes to
@@ -292,6 +287,50 @@ function generate() {
         console.log("Log created")
     }
 }
+function checkwaitlist(a, p) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
+    if (p == "sound") {
+        if () {
+
+        }
+    } else if (p == "lights") {
+
+    } else if (p == "backstage") {
+
+    }
+}
+function unsignup(req, res) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    try {
+        if (req.params.position == "sound") {
+            if (req.body.pass == data.people.soundpass) {
+                delete data.people.sound;
+                delete data.people.soundpass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        } else if (req.params.position == "lights") {
+            if (req.body.pass == data.people.lightpass) {
+                delete data.people.lights;
+                delete data.people.lightpass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        } else if (req.params.position == "backstage") {
+            if (req.body.pass == data.people.backstagepass) {
+                delete data.people.backstage;
+                delete data.people.backstagepass;
+            } else {
+                throw "Incorrect Passcode";
+            }
+        }
+        checkwaitlist(req.params.eventId, req.params.position);
+        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+        res.redirect(`/events/${req.params.eventId}`);
+    } catch (e) {
+        res.render('error', { error: e });
+    }
+}
 //page that has a list of events
 app.get('*', function (req, res) {
     res.status(404);
@@ -300,5 +339,5 @@ app.get('*', function (req, res) {
 
 app.listen(port, function () { //START WEBSERVER
     console.log(`The server has started on ${port}`);
-    generate()
+    generate();
 })
