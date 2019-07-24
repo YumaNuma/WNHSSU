@@ -12,6 +12,7 @@
     "body-parser": "^1.19.0",
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
+    "helmet": "^3.19.0",
     "path": "^0.12.7",
     "pug": "^2.0.4",
     "replace-in-file": "^4.1.0",
