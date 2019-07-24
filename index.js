@@ -14,6 +14,8 @@ const replace = require("replace-in-file");//LIBRARY FOR REPLACING FILE CONTENT
 const path = require("path")//LIBRARY FOR FILE DIRECTORY
 var bodyParser = require("body-parser"); //PARSING POST URL QUERIES
 const fs = require("fs");//FILE SYSTEM
+var cookieParser = require('cookie-parser');
+var helmet = require('helmet');
 //end of declaration of libraries
 
 //begin of global variables
@@ -26,13 +28,37 @@ var options;
 //end of global variables
 
 //begin of settings for express
+app.use(helmet());
+app.use(function (req, res, next) {
+    //log the ip of a visitor
+    try {
+        if (!fs.existsSync(__dirname + "/data/log.json")) {
+            fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
+            console.log("Log created")
+        }
+        var content = JSON.parse(fs.readFileSync(__dirname + '/data/log.json'));
+        content.log.push({ "ip": a, "webpage": req.path, "time": new Date() });
+        fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify(content));
+    } catch (e) {
+        console.log("error:" + e);
+    }
+    next();
+})
 app.use(bodyParser.json()); //USE BODYPARSER
 app.use(express.static(__dirname + '/views'));
-app.use(bodyParser.urlencoded({extended: true}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.set('views', __dirname + '/views'); //SET THE VIEW FOLDER
 app.set('view engine', 'pug'); //SET THE VIEW ENGINE
+app.use(cookieParser());
 //end of settings for express
 
+app.get("/panel", function (req, res) {
+    if (authenticated(req)) {
+        res.sendFile("/views/panel.html", { root: __dirname });
+    } else {
+        res.redirect('/login');
+    }
+})
 app.get("/events", function (req, res) { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
@@ -43,7 +69,11 @@ app.get("/events", function (req, res) { //LIST OF EVENTS
 
 //create eent admin only
 app.get("/createevent", function (req, res) {
-    res.sendFile("/views/createevent.html", { root: __dirname })
+    if (authenticated(req)) {
+        res.sendFile("/views/createevent.html", { root: __dirname });
+    } else {
+        res.redirect('/login');
+    }
 })
 
 //the event page
@@ -54,21 +84,19 @@ app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
     res.render("viewpage", { datai: datate, yeari: date, peoplei: datate.people })
 })
 
+app.get('/login', function (req, res) {
+    res.sendFile("/views/login.html", { root: __dirname });
+})
+app.post('/login', function (req, res) {
+    if (req.body.pass == "6456") {
+        res.cookie("auth", "authenticated", { maxAge: 90000 });
+        res.redirect("/panel");
+    }
+})
 //redirects to eventss
 app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
-    if (!fs.existsSync(__dirname + "/events/log.json")) {
-        fs.writeFileSync(__dirname + "/events/log.json", JSON.stringify({ "ips": [] }));
-        console.log("Log created")
-    }
-    try {
-        var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-        logip(ip);
-    } catch (e) {
-        console.log("Error logging IP. Log: " + e)
-    }
     res.redirect("/events");
 })
-
 app.get('/events/:eventId/delete', function (req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
     res.sendFile("/views/delete.html", { root: __dirname });
@@ -79,7 +107,7 @@ app.get('/events/:eventId/signup', function (req, res) { //signup
     res.render("signup", { datai: datate });
 })
 app.get('/events/:eventId/:position/delete', function (req, res) {
-    res.sendFile("/views/remove.html", {root: __dirname});
+    res.sendFile("/views/remove.html", { root: __dirname });
 })
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
@@ -92,7 +120,7 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
     nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATIONs
     try {
         if (!fs.existsSync(nf)) {
-            fs.copyFileSync(__dirname + "/events/template.json", nf);
+            fs.copyFileSync(__dirname + "/template.json", nf);
             //following code replaces strings in the newly made file that is identical to the template
             replaceall(nf, "templateevent", name);
             replaceall(nf, "monthi", month);
@@ -177,7 +205,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
                     throw "You cannot sign up for multiple things"
                 } else if (fname == fdata.people.backstage) {
                     throw "You cannot sign up for multiple things"
-                } else { 
+                } else {
                     fdata.people.sound = fname;
                     fdata.people.soundpass = fpass;
                 }
@@ -228,30 +256,17 @@ app.post('/events/:eventId/setpos', function (req, res) {
     }
 })
 
-
-//log the ip of a visitor
-function logip(a) {
-    var cond = 0;
-    var content = JSON.parse(fs.readFileSync(__dirname + '/events/log.json'));
-    if (content.ips.length > 0) { //checks if ip is in the system
-        for (i = 0; i < content.ips.length; i++) {
-            if (content.ips[i].ip == a) {
-                content.ips[i].count += 1;
-                cond = 1;
-            }
-        }
-    }
-    if (cond == 0) {
-        content.ips.push({ "ip": a, "count": 1});
-    } 
-    fs.writeFileSync(__dirname + "/events/log.json", JSON.stringify(content));
-    }
-
 //Capitalize the first letter of a word
 function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
 }
-
+function authenticated(r) {
+    if (r.cookies.auth == undefined || r.cookies.auth == null) {
+        return false
+    } else if (r.cookies.auth == "authenticated") {
+        return true;
+    }
+}
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
@@ -268,12 +283,21 @@ function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     }
     replace.sync(options);
 }
+function generate() {
+    if (!fs.existsSync("events")) {
+        fs.mkdirSync("events");
+    }
+    if (!fs.existsSync("data")) {
+        fs.mkdirSync("data");
+    }
+}
 //page that has a list of events
 app.get('*', function (req, res) {
     res.status(404);
     res.redirect('/');
 });
 
-app.listen(port, function() { //START WEBSERVER
+app.listen(port, function () { //START WEBSERVER
     console.log(`The server has started on ${port}`);
+    generate()
 })
