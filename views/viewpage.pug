@@ -11,6 +11,10 @@ unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "S
   a(href='/events/' + datai.id + '/signup')
     button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
     br
+if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
+  a(href='/events/' + datai.id + '/waitlist')
+    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to join the waitlist for a taken spot
+    br
 a(href='/')
   button.w3-btn.w3-green.w3-mobile.w3-xlarge.w3-section Go back home
 unless !isadmin
@@ -47,5 +51,13 @@ unless !isadmin
         | Backstage - #{datai.people.backstage}&nbsp;
         unless !('backstage' in datai.people)
           a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") unsignup
+      unless !('waitlist' in datai.people)
+        br
+        p.w3-xlarge Waitlist:
+         unless !('sound' in data.people.waitlist) 
+           br
+           | Sound: 
+           each person in data.people.waitlist["sound"]
+             | #{person}}
       b
         p.w3-xxlarge LOCATION: #{datai.location} 
