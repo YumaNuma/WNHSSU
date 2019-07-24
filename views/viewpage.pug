@@ -7,9 +7,10 @@ head
     body {
     background-image: linear-gradient(to right, yellow , green);
     }
-a(href='/events/' + datai.id + '/signup')
-  button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
-br
+unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
+  a(href='/events/' + datai.id + '/signup')
+    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
+    br
 a(href='/')
   button.w3-btn.w3-green.w3-mobile.w3-xlarge.w3-section Go back home
 unless !isadmin
@@ -35,16 +36,16 @@ unless !isadmin
       br
       | Sound - #{datai.people.sound} 
       unless !('sound' in datai.people)
-        a.w3-large.w3-text-blue(href="/events/" + datai.id + "/sound/delete") delete
+        a.w3-large.w3-text-blue(href="/events/" + datai.id + "/sound/delete") unsignup
       unless datai.pos == "Sound Only"
         br
         |Lights - #{datai.people.lights}&nbsp;
         unless !('lights' in datai.people)
-          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/lights/delete") delete
+          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/lights/delete") unsignup
       unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
         br
         | Backstage - #{datai.people.backstage}&nbsp;
         unless !('backstage' in datai.people)
-          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") delete
+          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") unsignup
       b
         p.w3-xxlarge LOCATION: #{datai.location} 
