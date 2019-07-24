@@ -108,21 +108,46 @@ app.get('/events/:eventId/signup', function (req, res) { //signup
     res.render("signup", { datai: datate });
 })
 app.get('/events/:eventId/:position/delete', function (req, res) {
+    var temp = {};
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     if (authenticated(req)) {
+        if (!("waitlist" in data.people)) {
+            data.people.waitlist = {};
+        }
         try {
+            console.log('ribbit');
             if (req.params.position == "sound") {
                 delete data.people.sound;
                 delete data.people.soundpass;
+                if (data.people.waitlist.sound.length > 0) {
+                    temp = data.people.waitlist.sound[0];
+                    data.people.sound = temp.name;
+                    data.people.soundpass = temp.pass;
+                    data.people.waitlist.sound.splice(0, 1);
+                }
             } else if (req.params.position == "lights") {
                 delete data.people.lights;
-                delete data.people.lightpass;
+                delete data.people.lightspass;
+                if (data.people.waitlist.lights.length > 0) {
+                    temp = data.people.waitlist.lights[0];
+                    data.people.lights = temp.name;
+                    data.people.lightpass = temp.pass;
+                    data.people.waitlist.lights.splice(0, 1);
+                }
             } else if (req.params.position == "backstage") {
                 delete data.people.backstage;
-                delete data.people.backstagepass;
+                delete data.people.backstage;
+                if (data.people.waitlist.backstage.length > 0) {
+                    temp = data.people.waitlist.backstage[0];
+
+                    data.people.backstage = temp.name;
+                    data.people.backstagepass = temp.pass;
+                    data.people.waitlist.backstage.splice(0, 1);
+                }
             }
+            console.log('hold up')
+            fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
             res.redirect(`/events/${req.params.eventId}`);
-            fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data))
         } catch (e) {
             res.send(e);
         }
@@ -136,12 +161,44 @@ app.get('/events/:eventId/waitlist', function (req, res) {
 
 function checkwaitlist(a, p) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
-    if (p == "sound") {
-
-    } else if (p == "lights") {
-
-    } else if (p == "backstage") {
-
+    if (!("waitlist" in data.people)) {
+        data.people.waitlist = {};
+    }
+    try {
+        if (req.params.position == "sound") {
+            delete data.people.sound;
+            delete data.people.soundpass;
+            if (data.people.waitlist.sound.length > 0) {
+                temp = data.people.waitlist.sound[0];
+                console.log(temp)
+                data.people.sound = temp.name;
+                data.people.soundpass = temp.pass;
+                data.people.waitlist.sound.splice(0, 1);
+            }
+        } else if (req.params.position == "lights") {
+            delete data.people.lights;
+            delete data.people.lightspass;
+            if (data.people.waitlist.lights.length > 0) {
+                temp = data.people.waitlist.lights[0];
+                console.log(temp)
+                data.people.lights = temp.name;
+                data.people.lightpass = temp.pass;
+                data.people.waitlist.lights.splice(0, 1);
+            }
+        } else if (req.params.position == "backstage") {
+            delete data.people.backstage;
+            delete data.people.backstage;
+            if (data.people.waitlist.backstage.length > 0) {
+                temp = data.people.waitlist.backstage[0];
+                console.log(temp)
+                data.people.backstage = temp.name;
+                data.people.backstagepass = temp.pass;
+                data.people.waitlist.backstage.splice(0, 1);
+            }
+        }
+        fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
+    } catch (e) {
+        res.render('error', { error: e });
     }
 }
 
@@ -272,7 +329,7 @@ app.post('/events/:eventId/waitlist', function (req, res) {
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
         var fpass = req.body.pass;
         fname = capitalize(fname);
-        if (!"waitlist" in fdata.people) {
+        if (!("waitlist" in fdata.people)) {
             fdata.people.waitlist = {};
         }
         if (fpos == "1") {
@@ -319,7 +376,6 @@ app.post('/events/:eventId/waitlist', function (req, res) {
                 }
             }
             fdata.people.waitlist.backstage.push({ "name": fname, "pass": fpass });
-        }
         }
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
         res.redirect(`/events/${req.params.eventId}`);
