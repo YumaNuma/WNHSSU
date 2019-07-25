@@ -1,3 +1,4 @@
+﻿    
 doctype html
 title Williamsville North Crew Calendar
 meta(name='viewport' content='width=device-width, initial-scale=1')
@@ -27,9 +28,9 @@ center
 .w3-container
 each event in els
   a(href='/events/' + event.id)
-   .hov.w3-section.w3-card-1.w3-hover-shadow.w3-animate-top(style='width:50%;')
+   .hov.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-green(style='width:50%;')
     header.w3-container.w3-border.w3-topbar
      b
-      p.w3-xxlarge #{event.name}
+      p.w3-xxlarge.w3-center #{event.name}
 else
   h1.w3-display-middle.w3-xxlarge There are no upcoming Events

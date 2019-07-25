@@ -147,11 +147,12 @@ app.get('/events/:eventId/waitlist', function (req, res) {
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
-    month = req.query.month || req.body.month; //e.g. ?month=09
+    month = req.query.month || req.body.month; //e.g. ?month=March
     day = req.query.day || req.body.day; // e.g. ?day=24
     time = req.query.time || req.body.time; //e.g. ?time=5:30
     loc = req.query.loc || req.body.loc;
     pn = req.query.pn || req.body.pn; //positions needed e.g. ?pn=1-3
+    var year = new Date().getFullYear().toString();
     nf = __dirname + "/events/" + ide + ".json"; //FILE LOCATIONs
     try {
         if (!fs.existsSync(nf)) {
@@ -163,7 +164,7 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
             replaceall(nf, "timei", time);
             replaceall(nf, "loci", loc);
             replaceall(nf, "idi", ide);
-            replaceall(nf, "yeari", new Date().getFullYear().toString())
+            replaceall(nf, "yeari", year)
             if (pn == 1) {
                 replaceall(nf, "posi", "Sound Only");
             } else if (pn == 2) {
@@ -174,8 +175,8 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
                 throw "INVALID POSITION"
             }
             // end
-            addtofile(ide, name); //add to event list 
-            res.send(`REQUEST SUCCESSFUL. ID:  + ${ide} + . Write this down. <br><a href='/events/${ide}'>Click here to go to the event</a><br><a href='/'>Click here to go to the home page</a>`); //result send back status
+            addtofile(ide, name, `${month} ${day}, ${year}`, pn); //add to event list 
+            res.send(`<!doctype html><html lang="en"><head><meta name='viewport' content='width=device-width, initial-scale=1' /></head><body>REQUEST SUCCESSFUL. ID: + ${ide} +. Write this down. <br><a href='/events/${ide}'>Click here to go to the event</a><br><a href='/'>Click here to go to the home page</a></body></html>`); //result send back status
         } else {
             throw "There is already an event with that ID";
         }
@@ -334,12 +335,20 @@ function addtowaitlist(req, res) {
     fs.writeFileSync(path, JSON.stringify(data));
 }
 
-function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
+function addtofile(id1, name1, date, pos) { //ADD TO ARRAY OF EVENTLIST JSON
+    var position;
+    if (pos == 1) {
+        position = "Sound Only";
+    } else if (pos == 2) {
+        position = "Sound & Lights";
+    } else if (pos == 3) {
+        position = "Sound & Lights & Backstage";
+    }
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
-    result.events.unshift({ "id": id1, "name": name1 })
+    result.events.unshift({ "id": id1, "name": name1, "date": date, "position": position });
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
 };
 function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
