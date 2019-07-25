@@ -7,13 +7,13 @@ head
     body {
     background-image: linear-gradient(to right, yellow , green);
     }
-unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
-  a(href='/events/' + datai.id + '/signup')
-    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
-    br
 if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
   a(href='/events/' + datai.id + '/waitlist')
     button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to join the waitlist for a taken spot
+    br
+unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
+  a(href='/events/' + datai.id + '/signup')
+    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
     br
 a(href='/')
   button.w3-btn.w3-green.w3-mobile.w3-xlarge.w3-section Go back home
@@ -25,7 +25,7 @@ unless !isadmin
   header.w3-container.w3-light-grey
     b
       p.w3-xxxlarge.w3-text-red #{datai.name}
-  .w3-container.w3-light-grey.w3-border
+  .w3-container.w3-light-grey.w3-border-top
     p.w3-xlarge
       | Date: #{datai.date.month} #{datai.date.day}, #{datai.date.year}
       br
@@ -33,31 +33,48 @@ unless !isadmin
       br
       b
         | Positions Needed: #{datai.pos}
-  footer.w3-container.w3-light-grey 
-    p.w3-xlarge
-      | Who is currently working it: 
-      br
-      br
-      | Sound - #{datai.people.sound} 
-      unless !('sound' in datai.people)
-        a.w3-large.w3-text-blue(href="/events/" + datai.id + "/sound/delete") unsignup
-      unless datai.pos == "Sound Only"
+  .w3-topbar.w3-light-grey
+    .w3-container
+      p.w3-xlarge
+        | Who is currently working it: 
         br
-        |Lights - #{datai.people.lights}&nbsp;
-        unless !('lights' in datai.people)
-          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/lights/delete") unsignup
-      unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
         br
-        | Backstage - #{datai.people.backstage}&nbsp;
-        unless !('backstage' in datai.people)
-          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") unsignup
-      unless !(('waitlist' in datai.people) && ('sound' in datai.people.waitlist || 'lights' in datai.people.waitlist || 'backstage' in datai.people.waitlist  ))
-        br
-        p.w3-xlarge Waitlist:
-         unless !(datai.people.waitlist.sound.length > 0) 
-           br
-           | Sound: 
-           each person in datai.people.waitlist["sound"]
-             |  #{person.name},
+        | Sound - #{datai.people.sound} 
+        unless !('sound' in datai.people)
+          a.w3-large.w3-text-blue(href="/events/" + datai.id + "/sound/delete") unsignup
+        unless datai.pos == "Sound Only"
+          br
+          |Lights - #{datai.people.lights}&nbsp;
+          unless !('lights' in datai.people)
+            a.w3-large.w3-text-blue(href="/events/" + datai.id + "/lights/delete") unsignup
+        unless datai.pos == "Sound Only" || datai.pos == "Sound & Lights"
+          br
+          | Backstage - #{datai.people.backstage}&nbsp;
+          unless !('backstage' in datai.people)
+            a.w3-large.w3-text-blue(href="/events/" + datai.id + "/backstage/delete") unsignup
+    unless !('waitlist' in datai.people) 
+      .w3-topbar.w3-container
+        p.w3-xlarge
+         | Waitlist:
+         br 
+         unless !('sound' in datai.people.waitlist)
+           p.w3-xlarge
+            | Sound - 
+            each person in datai.people.waitlist.sound
+              p.w3-large
+               | &nbsp;&nbsp;&nbsp;#{person.name}
+         unless !('lights' in datai.people.waitlist)
+           p.w3-xlarge
+            | lights - 
+            each person in datai.people.waitlist.lights
+              p.w3-large
+               | &nbsp;&nbsp;&nbsp;#{person.name}
+         unless !('backstage' in datai.people.waitlist)
+           p.w3-xlarge
+            | backstage - 
+            each person in datai.people.waitlist.backstage
+              p.w3-large
+               | &nbsp;&nbsp;&nbsp;#{person.name}
+    .w3-topbar.w3-container
       b
-        p.w3-xxlarge LOCATION: #{datai.location} 
+        p.w3-xlarge LOCATION: #{datai.location} 
