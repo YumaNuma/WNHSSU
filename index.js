@@ -1,13 +1,3 @@
-/*
-/////////////////////////////////////////////////////////////
-/
-/           COPYRIGHT ZAID ARSHAD 2018
-/           license: Attribution-NonCommercial-ShareAlike 4.0 International (CC BY-NC-SA 4.0)(https://creativecommons.org/licenses/by-nc-sa/4.0/)
-/
-////////////////////////////////////////////////////////////
-*/
-
-
 //begin of declaration of libraries
 const express = require("express");//WEBSERVER LIBRARY
 const replace = require("replace-in-file");//LIBRARY FOR REPLACING FILE CONTENT
@@ -49,159 +39,111 @@ app.set('view engine', 'pug'); //SET THE VIEW ENGINE
 app.use(cookieParser());
 //end of settings for express
 
+
+/*
+   _____           _   _               __
+  / ____|         | | (_)             /_ |
+ | (___   ___  ___| |_ _  ___  _ __    | |
+  \___ \ / _ \/ __| __| |/ _ \| '_ \   | |
+  ____) |  __/ (__| |_| | (_) | | | |  | |
+ |_____/ \___|\___|\__|_|\___/|_| |_|  |_|
+
+*/
+
+//ADMIN PANEL
+//search: panel1
 app.get("/panel", function (req, res) {
     if (authenticated(req)) {
         res.sendFile("/views/panel.html", { root: __dirname });
     } else {
         res.redirect('/login');
     }
-})
+});
 
-app.get('/events/:eventId/waitlist', function (req, res) {
-    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
-    res.render('waitlist', { datai: datate });
-})
+//Event list page
+//search: event1
 app.get("/events", function (req, res) { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
     var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
     res.render("index", { els: el.events });
-})
+});
 
-//create eent admin only
+//Create event page (Crew Chief Only)
+//search: createevent1
 app.get("/createevent", function (req, res) {
     if (authenticated(req)) {
         res.sendFile("/views/createevent.html", { root: __dirname });
     } else {
         res.redirect('/login');
     }
-})
+});
 
-//the event page
+//Dynamic page for an event
+//search: eventpage1
 app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
     var admin = authenticated(req);
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     res.render("viewpage", { datai: data, isadmin: admin })
-})
+});
 
+//login (Crew Chief Only)
+// search: login1
 app.get('/login', function (req, res) {
     res.sendFile("/views/login.html", { root: __dirname });
-})
-app.post('/login', function (req, res) {
-    if (req.body.pass == "6456") {
-        res.cookie("auth", "authenticated", { maxAge: 86400000 });
-        res.redirect("/panel");
-    }
-})
-//redirects to eventss
+});
+
+//redirects to events
+// search: eventredirect1
 app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
     res.redirect("/events");
-})
+});
+
+//Delete an event
+// search: delete1
 app.get('/events/:eventId/delete', function (req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
     res.sendFile("/views/delete.html", { root: __dirname });
-})
-//the signup for the event page
-app.get('/events/:eventId/signup', function (req, res) { //signup
-    var datate = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render("signup", { datai: datate });
-})
-app.get('/events/:eventId/:position/delete', function (req, res) {
-    var temp = {};
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    if (authenticated(req)) {
-        if (!("waitlist" in data.people)) {
-            data.people.waitlist = {};
-        }
-        try {
-            console.log('ribbit');
-            if (req.params.position == "sound") {
-                delete data.people.sound;
-                delete data.people.soundpass;
-                if (data.people.waitlist.sound.length > 0) {
-                    temp = data.people.waitlist.sound[0];
-                    data.people.sound = temp.name;
-                    data.people.soundpass = temp.pass;
-                    data.people.waitlist.sound.splice(0, 1);
-                }
-            } else if (req.params.position == "lights") {
-                delete data.people.lights;
-                delete data.people.lightspass;
-                if (data.people.waitlist.lights.length > 0) {
-                    temp = data.people.waitlist.lights[0];
-                    data.people.lights = temp.name;
-                    data.people.lightpass = temp.pass;
-                    data.people.waitlist.lights.splice(0, 1);
-                }
-            } else if (req.params.position == "backstage") {
-                delete data.people.backstage;
-                delete data.people.backstage;
-                if (data.people.waitlist.backstage.length > 0) {
-                    temp = data.people.waitlist.backstage[0];
-
-                    data.people.backstage = temp.name;
-                    data.people.backstagepass = temp.pass;
-                    data.people.waitlist.backstage.splice(0, 1);
-                }
-            }
-            console.log('hold up')
-            fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
-            res.redirect(`/events/${req.params.eventId}`);
-        } catch (e) {
-            res.send(e);
-        }
-    } else {
-        res.sendFile("/views/remove.html", { root: __dirname });
-    }
-})
-app.get('/events/:eventId/waitlist', function (req, res) {
-    res.sendFile('/views/waitlist.html', { root: __dirname });
 });
 
-function checkwaitlist(a, p) {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
-    if (!("waitlist" in data.people)) {
-        data.people.waitlist = {};
-    }
-    try {
-        if (req.params.position == "sound") {
-            delete data.people.sound;
-            delete data.people.soundpass;
-            if (data.people.waitlist.sound.length > 0) {
-                temp = data.people.waitlist.sound[0];
-                console.log(temp)
-                data.people.sound = temp.name;
-                data.people.soundpass = temp.pass;
-                data.people.waitlist.sound.splice(0, 1);
-            }
-        } else if (req.params.position == "lights") {
-            delete data.people.lights;
-            delete data.people.lightspass;
-            if (data.people.waitlist.lights.length > 0) {
-                temp = data.people.waitlist.lights[0];
-                console.log(temp)
-                data.people.lights = temp.name;
-                data.people.lightpass = temp.pass;
-                data.people.waitlist.lights.splice(0, 1);
-            }
-        } else if (req.params.position == "backstage") {
-            delete data.people.backstage;
-            delete data.people.backstage;
-            if (data.people.waitlist.backstage.length > 0) {
-                temp = data.people.waitlist.backstage[0];
-                console.log(temp)
-                data.people.backstage = temp.name;
-                data.people.backstagepass = temp.pass;
-                data.people.waitlist.backstage.splice(0, 1);
-            }
-        }
-        fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
-    } catch (e) {
-        res.render('error', { error: e });
-    }
-}
+//the signup for the event page
+// search: signup1
+app.get('/events/:eventId/signup', function (req, res) { //signup
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    res.render("signup", { datai: data });
+});
 
+//Unsign up for event page
+// search: unsignup1
+app.get('/events/:eventId/:position/delete', function (req, res) {
+    if (authenticated(req)) {
+        unsignup(req, res);
+    } else {
+        res.sendFile('/views/remove.html', { root: __dirname });
+    }
+});
+
+//join the waitlist page
+// search: waitlist1
+app.get('/events/:eventId/waitlist', function (req, res) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
+    res.render('waitlist', { datai: data});
+});
+
+
+/* 
+   _____           _   _               ___
+  / ____|         | | (_)             |__ \
+ | (___   ___  ___| |_ _  ___  _ __      ) |
+  \___ \ / _ \/ __| __| |/ _ \| '_ \    / /
+  ____) |  __/ (__| |_| | (_) | | | |  / /_
+ |_____/ \___|\___|\__|_|\___/|_| |_| |____|
+
+*/
+
+//Create an event post
+// search: createeventpost
 app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -240,8 +182,19 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
     } catch (e) {
         res.render('error', { error: e });
     }
-})
+});
 
+//Post for login, authenticates the passcode and sets the cookie. Very unsecure
+// search: loginpost
+app.post('/login', function (req, res) {
+    if (req.body.pass == "6456") {
+        res.cookie("auth", "authenticated", { maxAge: 86400000 });
+        res.redirect("/panel");
+    }
+});
+
+//Delete an event post
+// search: eventdeletepost
 app.post('/events/:eventId/delete', function (req, res) {
     fs.unlinkSync(__dirname + `/events/${req.params.eventId}.json`);
     var a = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
@@ -252,12 +205,16 @@ app.post('/events/:eventId/delete', function (req, res) {
     }
     fs.writeFileSync(__dirname + `/events/eventlist.json`, JSON.stringify(a));
     res.redirect("/events")
-})
+});
+
+//unsignup for event post
+// search: unsignuppost
 app.post('/events/:eventId/:position/delete', function (req, res) {
     unsignup(req, res);
-})
+});
 
 //the post url where the data from the event signup page goes to
+// search: signuppost
 app.post('/events/:eventId/setpos', function (req, res) {
     try {
         var fname = req.body.name;
@@ -320,81 +277,63 @@ app.post('/events/:eventId/setpos', function (req, res) {
     } catch (e) {
         res.render('error', { error: e });
     }
-})
+});
 
+//post for waitlist
+// search: waitlistpost
 app.post('/events/:eventId/waitlist', function (req, res) {
-    try {
-        var fname = req.body.name;
-        var fpos = req.body.pos;
-        var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-        var fpass = req.body.pass;
-        fname = capitalize(fname);
-        if (!("waitlist" in fdata.people)) {
-            fdata.people.waitlist = {};
-        }
-        if (fpos == "1") {
-            if ("sound" in fdata.people.waitlist) {
-                for (i = 0; i < fdata.people.waitlist.sound.length; i++) {
-                    if (fdata.people.waitlist.sound[i].name == fname) {
-                        throw "You cannot join the waitlist twice";
-                    }
-                }
-                fdata.people.waitlist.sound.push({ "name": fname, "pass": fpass });
-            } else {
-                fdata.people.waitlist.sound = [];
-                for (i = 0; i < fdata.people.waitlist.sound.length; i++) {
-                    if (fdata.people.waitlist.sound[i].name == fname) {
-                        throw "You cannot join the waitlist twice";
-                    }
-                }
-                fdata.people.waitlist.sound.push({ "name": fname, "pass": fpass });
-            }
-        }
-        else if (fpos == "2") {
-            if ("lights" in fdata.people.waitlist) {
-                for (i = 0; i < fdata.people.waitlist.lights.length; i++) {
-                    if (fdata.people.waitlist.lights[i].name == fname) {
-                        throw "You cannot join the waitlist twice";
-                    }
-                }
-                fdata.people.waitlist.lights.push({ "name": fname, "pass": fpass });
-            } else {
-                fdata.people.waitlist.lights = [];
-                for (i = 0; i < fdata.people.waitlist.lights.length; i++) {
-                    if (fdata.people.waitlist.lights[i].name == fname) {
-                        throw "You cannot join the waitlist twice";
-                    }
-                }
-                fdata.people.waitlist.lights.push({ "name": fname, "pass": fpass });
-            }
-        }
-        else if (fpos == "3") {
-            fdata.people.waitlist.backstage = [];
-            for (i = 0; i < fdata.people.waitlist.backstage.length; i++) {
-                if (fdata.people.waitlist.backstage[i].name == fname) {
-                    throw "You cannot join the waitlist twice";
-                }
-            }
-            fdata.people.waitlist.backstage.push({ "name": fname, "pass": fpass });
-        }
-        fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(fdata));
-        res.redirect(`/events/${req.params.eventId}`);
-    } catch (e) {
-        res.render('error', { error: e });
-    }
-})
+    addtowaitlist(req, res);
+    res.redirect(`/events/${req.params.eventId}`);
+});
 
+/*
+   _____           _   _               ____
+  / ____|         | | (_)             |___ \
+ | (___   ___  ___| |_ _  ___  _ __     __) |
+  \___ \ / _ \/ __| __| |/ _ \| '_ \   |__ <
+  ____) |  __/ (__| |_| | (_) | | | |  ___) |
+ |_____/ \___|\___|\__|_|\___/|_| |_| |____/
+
+
+*/
 //Capitalize the first letter of a word
 function capitalize(s) {
     return s.charAt(0).toUpperCase() + s.slice(1);
-}
+};
 function authenticated(r) {
     if (r.cookies.auth == undefined || r.cookies.auth == null) {
         return false
     } else if (r.cookies.auth == "authenticated") {
         return true;
     }
+};
+
+function addtowaitlist(req, res) {
+    var path = __dirname + `/events/${req.params.eventId}.json`;
+    var data = JSON.parse(fs.readFileSync(path));
+    var position = req.body.pos;
+    if (!('waitlist' in data.people)) {
+        data.people.waitlist = {};
+    }
+    if (position == 1) {
+        if (!('sound' in data.people.waitlist)) {
+            data.people.waitlist.sound = [];
+        }
+        data.people.waitlist.sound.push({"name" : req.body.name, "pass" : req.body.pass});
+    } else if (position == 2) {
+        if (!('lights' in data.people.waitlist)) {
+            data.people.waitlist.lights = [];
+        }
+        data.people.waitlist.lights.push({ "name": req.body.name, "pass": req.body.pass });
+    } else if (position == 3) {
+        if (!('backstage' in data.people.waitlist)) {
+            data.people.waitlist.backstage = [];
+        }
+        data.people.waitlist.backstage.push({ "name": req.body.name, "pass": req.body.pass });
+    }
+    fs.writeFileSync(path, JSON.stringify(data));
 }
+
 function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
@@ -402,7 +341,7 @@ function addtofile(id1, name1) { //ADD TO ARRAY OF EVENTLIST JSON
     var result = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     result.events.unshift({ "id": id1, "name": name1 })
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
-}
+};
 function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     options = {
         "files": a,
@@ -410,7 +349,7 @@ function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
         "to": c
     }
     replace.sync(options);
-}
+};
 function generate() {
     if (!fs.existsSync("events")) {
         fs.mkdirSync("events");
@@ -422,26 +361,69 @@ function generate() {
         fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
         console.log("Log created")
     }
-}
-
+};
+function checkwaitlist(a, p) {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
+    if (p == "sound") {
+        if (data.people.waitlist.sound.length > 1) {
+            var temp = data.people.waitlist.sound[0];
+            data.people.sound = temp.name;
+            data.people.soundpass = temp.pass;
+            data.people.waitlist.sound.splice(0, 1);
+        } else if (data.people.waitlist.sound.length == 1) {
+            var temp = data.people.waitlist.sound[0];
+            data.people.sound = temp.name;
+            data.people.soundpass = temp.pass;
+            delete data.people.waitlist.sound;
+        }
+    } else if (p == "lights") {
+        if (data.people.waitlist.lights.length > 1) {
+            var temp = data.people.waitlist.lights[0];
+            data.people.lights = temp.name;
+            data.people.lightpass = temp.pass;
+            data.people.waitlist.lights.splice(0, 1);
+        } else if (data.people.waitlist.lights.length == 1) {
+            var temp = data.people.waitlist.lights[0];
+            data.people.lights = temp.name;
+            data.people.lightpass = temp.pass;
+            delete data.people.waitlist.lights;
+        }
+    } else if (p == "backstage") {
+        if (data.people.waitlist.backstage.length > 1) {
+            var temp = data.people.waitlist.backstage[0];
+            data.people.backstage = temp.name;
+            data.people.backstagepass = temp.pass;
+            data.people.waitlist.backstage.splice(0, 1);
+        } else if (data.people.waitlist.backstage.length == 1) {
+            var temp = data.people.waitlist.backstage[0];
+            data.people.backstage = temp.name;
+            data.people.backstagepass = temp.pass;
+            delete data.people.waitlist.backstage;
+        }
+    }
+    if (!(('sound' in data.people.waitlist) && ('lights' in data.people.waitlist) && ('backstage' in data.people.waitlist))) {
+        delete data.people.waitlist;
+    }
+    fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
+};
 function unsignup(req, res) {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
         if (req.params.position == "sound") {
-            if (req.body.pass == data.people.soundpass) {
+            if (req.body.pass == data.people.soundpass || authenticated(req)) {
                 delete data.people.sound;
                 delete data.people.soundpass;
             } else {
                 throw "Incorrect Passcode";
             }
-        } else if (req.params.position == "lights") {
+        } else if (req.params.position == "lights" || authenticated(req)) {
             if (req.body.pass == data.people.lightpass) {
                 delete data.people.lights;
                 delete data.people.lightpass;
             } else {
                 throw "Incorrect Passcode";
             }
-        } else if (req.params.position == "backstage") {
+        } else if (req.params.position == "backstage" || authenticated(req)) {
             if (req.body.pass == data.people.backstagepass) {
                 delete data.people.backstage;
                 delete data.people.backstagepass;
@@ -449,13 +431,15 @@ function unsignup(req, res) {
                 throw "Incorrect Passcode";
             }
         }
-        checkwaitlist(req.params.eventId, req.params.position);
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
+        if ('waitlist' in data.people) {
+            checkwaitlist(req.params.eventId, req.params.position);
+        }
         res.redirect(`/events/${req.params.eventId}`);
     } catch (e) {
         res.render('error', { error: e });
     }
-}
+};
 //page that has a list of events
 app.get('*', function (req, res) {
     res.status(404);
