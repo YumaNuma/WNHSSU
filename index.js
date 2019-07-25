@@ -369,7 +369,7 @@ function checkwaitlist(a, p) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
-            data.people.waitlist.sound.splice(0, 1);
+            data.people.waitlist.sound.shift();
         } else if (data.people.waitlist.sound.length == 1) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
@@ -381,7 +381,7 @@ function checkwaitlist(a, p) {
             var temp = data.people.waitlist.lights[0];
             data.people.lights = temp.name;
             data.people.lightpass = temp.pass;
-            data.people.waitlist.lights.splice(0, 1);
+            data.people.waitlist.lights.shift();
         } else if (data.people.waitlist.lights.length == 1) {
             var temp = data.people.waitlist.lights[0];
             data.people.lights = temp.name;
@@ -393,7 +393,7 @@ function checkwaitlist(a, p) {
             var temp = data.people.waitlist.backstage[0];
             data.people.backstage = temp.name;
             data.people.backstagepass = temp.pass;
-            data.people.waitlist.backstage.splice(0, 1);
+            data.people.waitlist.backstage.shift();
         } else if (data.people.waitlist.backstage.length == 1) {
             var temp = data.people.waitlist.backstage[0];
             data.people.backstage = temp.name;
