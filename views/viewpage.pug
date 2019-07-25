@@ -9,7 +9,7 @@ head
     }
 if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
   a(href='/events/' + datai.id + '/waitlist')
-    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to join the waitlist for a taken spot
+    button.w3-mobile.w3-btn.w3-green.w3-xlarge.w3-section Click here to join the waitlist
     br
 unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
   a(href='/events/' + datai.id + '/signup')
