@@ -62,7 +62,7 @@ app.get("/panel", function (req, res) {
 
 //Event list page
 //search: event1
-app.get("/events", function (req, res) { //LIST OF EVENTS
+app.get("/events", (req, res) => { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
@@ -72,7 +72,7 @@ app.get("/events", function (req, res) { //LIST OF EVENTS
 
 //Create event page (Crew Chief Only)
 //search: createevent1
-app.get("/createevent", function (req, res) {
+app.get("/createevent", (req, res) => {
     if (authenticated(req)) {
         res.sendFile("/views/createevent.html", { root: __dirname });
     } else {
@@ -82,7 +82,7 @@ app.get("/createevent", function (req, res) {
 
 //Dynamic page for an event
 //search: eventpage1
-app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
+app.get('/events/:eventId', (req, res) => { // RETRIEVE DATA OF EVENT
     var admin = authenticated(req);
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     res.render("viewpage", { datai: data, isadmin: admin })
@@ -90,33 +90,33 @@ app.get('/events/:eventId', function (req, res) { // RETRIEVE DATA OF EVENT
 
 //login (Crew Chief Only)
 // search: login1
-app.get('/login', function (req, res) {
+app.get('/login', (req, res) => {
     res.sendFile("/views/login.html", { root: __dirname });
 });
 
 //redirects to events
 // search: eventredirect1
-app.get("/", function (req, res) { //MAIN PAGE REDIRECT TO EVENTS
+app.get("/", (req, res) => { //MAIN PAGE REDIRECT TO EVENTS
     res.redirect("/events");
 });
 
 //Delete an event
 // search: delete1
-app.get('/events/:eventId/delete', function (req, res) {
+app.get('/events/:eventId/delete', (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
     res.sendFile("/views/delete.html", { root: __dirname });
 });
 
 //the signup for the event page
 // search: signup1
-app.get('/events/:eventId/signup', function (req, res) { //signup
+app.get('/events/:eventId/signup', (req, res) => { //signup
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     res.render("signup", { datai: data });
 });
 
 //Unsign up for event page
 // search: unsignup1
-app.get('/events/:eventId/:position/delete', function (req, res) {
+app.get('/events/:eventId/:position/delete', (req, res) => {
     if (authenticated(req)) {
         unsignup(req, res);
     } else {
@@ -126,7 +126,7 @@ app.get('/events/:eventId/:position/delete', function (req, res) {
 
 //join the waitlist page
 // search: waitlist1
-app.get('/events/:eventId/waitlist', function (req, res) {
+app.get('/events/:eventId/waitlist', (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     res.render('waitlist', { datai: data});
 });
@@ -144,7 +144,7 @@ app.get('/events/:eventId/waitlist', function (req, res) {
 
 //Create an event post
 // search: createeventpost
-app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE EVENT FILE
+app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
     month = req.query.month || req.body.month; //e.g. ?month=March
@@ -187,7 +187,7 @@ app.post("/events/addnew", function (req, res) { //MAIN POST FUNCTION - GENERATE
 
 //Post for login, authenticates the passcode and sets the cookie. Very unsecure
 // search: loginpost
-app.post('/login', function (req, res) {
+app.post('/login', (req, res) => {
     if (req.body.pass == "6456") {
         res.cookie("auth", "authenticated", { maxAge: 86400000 });
         res.redirect("/panel");
@@ -196,7 +196,7 @@ app.post('/login', function (req, res) {
 
 //Delete an event post
 // search: eventdeletepost
-app.post('/events/:eventId/delete', function (req, res) {
+app.post('/events/:eventId/delete', (req, res) => {
     fs.unlinkSync(__dirname + `/events/${req.params.eventId}.json`);
     var a = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"));
     for (i = 0; i < a.events.length; i++) {
@@ -210,13 +210,13 @@ app.post('/events/:eventId/delete', function (req, res) {
 
 //unsignup for event post
 // search: unsignuppost
-app.post('/events/:eventId/:position/delete', function (req, res) {
+app.post('/events/:eventId/:position/delete', (req, res) => {
     unsignup(req, res);
 });
 
 //the post url where the data from the event signup page goes to
 // search: signuppost
-app.post('/events/:eventId/setpos', function (req, res) {
+app.post('/events/:eventId/setpos', (req, res) => {
     try {
         var fname = req.body.name;
         var fpos = req.body.pos;
@@ -282,7 +282,7 @@ app.post('/events/:eventId/setpos', function (req, res) {
 
 //post for waitlist
 // search: waitlistpost
-app.post('/events/:eventId/waitlist', function (req, res) {
+app.post('/events/:eventId/waitlist', (req, res) => {
     addtowaitlist(req, res);
     res.redirect(`/events/${req.params.eventId}`);
 });
@@ -298,10 +298,11 @@ app.post('/events/:eventId/waitlist', function (req, res) {
 
 */
 //Capitalize the first letter of a word
-function capitalize(s) {
+var capitalize = (s) => {
     return s.charAt(0).toUpperCase() + s.slice(1);
 };
-function authenticated(r) {
+
+var authenticated = (r) => {
     if (r.cookies.auth == undefined || r.cookies.auth == null) {
         return false
     } else if (r.cookies.auth == "authenticated") {
@@ -309,7 +310,7 @@ function authenticated(r) {
     }
 };
 
-function addtowaitlist(req, res) {
+var addtowaitlist = (req, res) => {
     var path = __dirname + `/events/${req.params.eventId}.json`;
     var data = JSON.parse(fs.readFileSync(path));
     var position = req.body.pos;
@@ -335,7 +336,7 @@ function addtowaitlist(req, res) {
     fs.writeFileSync(path, JSON.stringify(data));
 }
 
-function addtofile(id1, name1, date, pos) { //ADD TO ARRAY OF EVENTLIST JSON
+var addtofile = (id1, name1, date, pos) => { //ADD TO ARRAY OF EVENTLIST JSON
     var position;
     if (pos == 1) {
         position = "Sound Only";
@@ -351,7 +352,7 @@ function addtofile(id1, name1, date, pos) { //ADD TO ARRAY OF EVENTLIST JSON
     result.events.unshift({ "id": id1, "name": name1, "date": date, "position": position });
     fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify(result));
 };
-function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
+var replaceall = (a, b, c) => { //CHANGE CONTENT OF NEW JSON FILE
     options = {
         "files": a,
         "from": b,
@@ -359,7 +360,7 @@ function replaceall(a, b, c) { //CHANGE CONTENT OF NEW JSON FILE
     }
     replace.sync(options);
 };
-function generate() {
+var generate = () => {
     if (!fs.existsSync("events")) {
         fs.mkdirSync("events");
     }
@@ -371,7 +372,7 @@ function generate() {
         console.log("Log created")
     }
 };
-function checkwaitlist(a, p) {
+var checkwaitlist = (a, p) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
     if (p == "sound") {
         if (data.people.waitlist.sound.length > 1) {
@@ -415,7 +416,7 @@ function checkwaitlist(a, p) {
     }
     fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
 };
-function unsignup(req, res) {
+var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
         if (req.params.position == "sound") {
@@ -450,12 +451,12 @@ function unsignup(req, res) {
     }
 };
 //page that has a list of events
-app.get('*', function (req, res) {
+app.get('*',  (req, res) => {
     res.status(404);
     res.redirect('/');
 });
 
-app.listen(port, function () { //START WEBSERVER
+app.listen(port,  () => { //START WEBSERVER
     console.log(`The server has started on ${port}`);
     generate();
 })
