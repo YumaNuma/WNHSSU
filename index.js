@@ -376,10 +376,9 @@ var checkwaitlist = (a, p) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
     if (p == "sound") {
         if (data.people.waitlist.sound.length > 1) {
-            var temp = data.people.waitlist.sound[0];
+            var temp = data.people.waitlist.sound.shift();
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
-            data.people.waitlist.sound.shift();
         } else if (data.people.waitlist.sound.length == 1) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
@@ -388,10 +387,9 @@ var checkwaitlist = (a, p) => {
         }
     } else if (p == "lights") {
         if (data.people.waitlist.lights.length > 1) {
-            var temp = data.people.waitlist.lights[0];
+            var temp = data.people.waitlist.lights.shift();
             data.people.lights = temp.name;
             data.people.lightpass = temp.pass;
-            data.people.waitlist.lights.shift();
         } else if (data.people.waitlist.lights.length == 1) {
             var temp = data.people.waitlist.lights[0];
             data.people.lights = temp.name;
@@ -400,10 +398,9 @@ var checkwaitlist = (a, p) => {
         }
     } else if (p == "backstage") {
         if (data.people.waitlist.backstage.length > 1) {
-            var temp = data.people.waitlist.backstage[0];
+            var temp = data.people.waitlist.backstage.shift();
             data.people.backstage = temp.name;
             data.people.backstagepass = temp.pass;
-            data.people.waitlist.backstage.shift();
         } else if (data.people.waitlist.backstage.length == 1) {
             var temp = data.people.waitlist.backstage[0];
             data.people.backstage = temp.name;
