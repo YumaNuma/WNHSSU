@@ -91,7 +91,7 @@ app.get('/events/:eventId', (req, res) => { // RETRIEVE DATA OF EVENT
 //login (Crew Chief Only)
 // search: login1
 app.get('/login', (req, res) => {
-    res.sendFile("/views/login.html", { root: __dirname });
+    res.render("login", { root: __dirname });
 });
 
 //redirects to events
