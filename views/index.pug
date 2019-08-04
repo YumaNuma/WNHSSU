@@ -5,6 +5,7 @@ meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
 link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
 head
+include includes/head.pug
   style.
     .hov {
     margin:auto;
@@ -12,22 +13,16 @@ head
     a {
     text-decoration:none;
     }
-    body {
-    background-image: linear-gradient(to right, yellow , green);
-    }
-    div {
-    background-image: linear-gradient(to right, yellow , green)
-    }
     p {
     font-family: 'Roboto', sans-serif;
     }
 center
-  div.w3-container.w3-white
+  div.w3-container.w3-black
     b
       p.w3-xxxlarge Event List
 .w3-container(style="margin:0 auto;")
   each event in els
-   .hov.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-green(style='width:60%;')
+   .hov.w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%;')
      a(href='/events/' + event.id)
       header.w3-container.w3-border.w3-topbar
        b
