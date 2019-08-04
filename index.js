@@ -6,6 +6,7 @@ var bodyParser = require("body-parser"); //PARSING POST URL QUERIES
 const fs = require("fs");//FILE SYSTEM
 var cookieParser = require('cookie-parser');
 var helmet = require('helmet');
+const sqlite3 = require('sqlite3').verbose();
 //end of declaration of libraries
 
 //begin of global variables
@@ -144,6 +145,51 @@ app.get('/events/:eventId/waitlist', (req, res) => {
 
 //Create an event post
 // search: createeventpost
+app.post('/login/user', (req, res) => {
+    var db = new sqlite3.Database('./user.db', (err) => {
+        if (err) { console.log(err) };
+        console.log("Connect to login database")
+    });
+    db.serialize(function () {
+        db.get(`SELECT * FROM user WHERE username=?`, [req.body.username], (err, rows) => {
+            console.log(rows);
+            if (!rows || rows == null || rows == undefined) {
+                res.send('NO USER WITH THAT NAME');
+            } else {
+                if (rows.password == req.body.password) {
+                    res.send("Correct Password");
+                } else {
+                    res.send("Incorrect password");
+                }
+            }
+        });
+
+    });
+    db.close();
+})
+app.post('/register', (req, res) => {
+    var db = new sqlite3.Database('./user.db', (err) => {
+        if (err) {
+            console.error(err);
+        }
+        console.log('Connected to the login database.');
+    });
+    db.serialize(function () {
+        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT)');
+        db.run(`INSERT INTO user(username, name, password) VALUES('${req.body.username}', '${req.body.name}','${req.body.password}')`);
+        db.all('SELECT * FROM user', [], (err, rows) => {
+            if (err) {
+                throw err;
+            }
+            console.log(rows);
+            rows.forEach((row) => {
+                console.log(row);
+            });
+        });
+    })    
+    db.close();
+    res.send('done');
+})
 app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -447,6 +493,17 @@ var unsignup = (req, res) => {
         res.render('error', { error: e });
     }
 };
+function connecttodb(callback) {
+    let db = new sqlite3.Database('./user.db', (err) => {
+        if (err) {
+            console.error(err.message);
+        }
+        console.log('Connected to the login database.');
+    });
+    db.run('CREATE TABLE IF NOT EXISTS user(name text, password int)')
+    return db;
+    callback();
+}
 //page that has a list of events
 app.get('*',  (req, res) => {
     res.status(404);
