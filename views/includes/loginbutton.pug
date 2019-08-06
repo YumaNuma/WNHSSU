@@ -1,0 +1,37 @@
+center
+  div.w3-container.w3-black
+    b
+      p.w3-xxxlarge Event List
+      unless(user)
+        button.w3-black.w3-hover-grey(onclick="document.getElementById('id01').style.display='block'" style='width:auto;') Login
+      a(href='https://github.com/zaida04/WNSU')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Github
+      a(href='/admin/panel')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Admin Panel
+      a(href='/')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Home Page
+      if(user) 
+        button.w3-black.w3-hover-grey(style='width:auto;') Hello #{username}!
+        button.w3-black.w3-hover-grey(style='width:auto;') Log Out
+#id01.modal
+  form.modal-content.animate(action='/login/user' method="POST" style="width: 50%;")
+    .imgcontainer
+      span.close(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
+      br
+    .container
+      label(for='id')
+        b Username
+      input(type='text' placeholder='Enter Username or Phone Number' name='id' required='')
+      label(for='password')
+        b Password
+      input(type='password' placeholder='Enter Password' name='password' required='')
+      button(type='submit') Login
+script.
+  // Get the modal
+  var modal = document.getElementById('id01');
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+  if (event.target == modal) {
+  modal.style.display = "none";
+  }
+  }

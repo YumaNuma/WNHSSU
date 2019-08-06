@@ -3,13 +3,11 @@ doctype html
 title Williamsville North Crew Calendar
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
+include includes/head.pug
 link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
 head
-include includes/head.pug
+
   style.
-    .hov {
-    margin:auto;
-    }
     a {
     text-decoration:none;
     }
@@ -17,12 +15,10 @@ include includes/head.pug
     font-family: 'Roboto', sans-serif;
     }
 center
-  div.w3-container.w3-black
-    b
-      p.w3-xxxlarge Event List
-.w3-container(style="margin:0 auto;")
+include includes/loginbutton.pug
+.w3-container(style="margin: auto;")
   each event in els
-   .hov.w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%;')
+   .w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%; margin:auto')
      a(href='/events/' + event.id)
       header.w3-container.w3-border.w3-topbar
        b
