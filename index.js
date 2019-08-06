@@ -19,6 +19,7 @@ var options;
 //end of global variables
 
 //begin of settings for express
+app.use(cookieParser());
 app.use(helmet());
 app.use(function (req, res, next) {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -32,12 +33,18 @@ app.use(function (req, res, next) {
     }
     next();
 })
+app.use('/admin/*', (req, res, next) => {
+    if (authenticated(req)) {
+        next();
+    } else {
+        res.redirect('/login/admin')
+    }
+})
 app.use(bodyParser.json()); //USE BODYPARSER
 app.use(express.static(__dirname + '/views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('views', __dirname + '/views'); //SET THE VIEW FOLDER
 app.set('view engine', 'pug'); //SET THE VIEW ENGINE
-app.use(cookieParser());
 //end of settings for express
 
 
@@ -53,33 +60,48 @@ app.use(cookieParser());
 
 //ADMIN PANEL
 //search: panel1
-app.get("/panel", function (req, res) {
-    if (authenticated(req)) {
-        res.sendFile("/views/panel.html", { root: __dirname });
-    } else {
-        res.redirect('/login');
-    }
+app.get("/admin/panel", function (req, res) {
+    res.sendFile("/views/panel.html", { root: __dirname });
 });
 
+app.get('/login/user', (req, res) => {
+    res.render('login');
+})
+//Create event page (Crew Chief Only)
+//search: createevent1
+app.get("/admin/createevent", (req, res) => {
+    res.sendFile("/views/createevent.html", { root: __dirname });
+});
+
+app.get('/login/admin', (req, res) => {
+    res.render("loginadmin", { root: __dirname });
+});
+app.get('/events/:eventId/delete', (req, res) => {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
+    res.sendFile("/views/delete.html", { root: __dirname });
+});
 //Event list page
 //search: event1
 app.get("/events", (req, res) => { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
+    var is1 = false;
+    var username1 = "";
+    if (req.cookies.islogged) {
+        is1 = true;
+        username1 = req.cookies.islogged;
+    }
+    console.log(is1);
     var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
-    res.render("index", { els: el.events });
+    res.render("index", { els: el.events, user: is1, username: username1});
 });
 
-//Create event page (Crew Chief Only)
-//search: createevent1
-app.get("/createevent", (req, res) => {
-    if (authenticated(req)) {
-        res.sendFile("/views/createevent.html", { root: __dirname });
-    } else {
-        res.redirect('/login');
-    }
-});
+app.post('/logout', (req, res) => {
+    var cookie = req.cookies.islogged;
+
+})
+
 
 //Dynamic page for an event
 //search: eventpage1
@@ -91,9 +113,6 @@ app.get('/events/:eventId', (req, res) => { // RETRIEVE DATA OF EVENT
 
 //login (Crew Chief Only)
 // search: login1
-app.get('/login', (req, res) => {
-    res.render("login", { root: __dirname });
-});
 
 //redirects to events
 // search: eventredirect1
@@ -103,10 +122,7 @@ app.get("/", (req, res) => { //MAIN PAGE REDIRECT TO EVENTS
 
 //Delete an event
 // search: delete1
-app.get('/events/:eventId/delete', (req, res) => {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
-    res.sendFile("/views/delete.html", { root: __dirname });
-});
+
 
 //the signup for the event page
 // search: signup1
@@ -129,7 +145,7 @@ app.get('/events/:eventId/:position/delete', (req, res) => {
 // search: waitlist1
 app.get('/events/:eventId/waitlist', (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render('waitlist', { datai: data});
+    res.render('waitlist', { datai: data });
 });
 
 
@@ -151,13 +167,13 @@ app.post('/login/user', (req, res) => {
         console.log("Connect to login database")
     });
     db.serialize(function () {
-        db.get(`SELECT * FROM user WHERE username=?`, [req.body.username], (err, rows) => {
-            console.log(rows);
+        db.get(`SELECT * FROM user WHERE username=? OR pnumber=?`, [req.body.id, req.body.id], (err, rows) => {
             if (!rows || rows == null || rows == undefined) {
-                res.send('NO USER WITH THAT NAME');
+                res.send('no user with that name or number');
             } else {
                 if (rows.password == req.body.password) {
-                    res.send("Correct Password");
+                    res.cookie('islogged', rows.name, { maxAge: 900000, httpOnly: true });
+                    res.redirect('/events')
                 } else {
                     res.send("Incorrect password");
                 }
@@ -175,18 +191,15 @@ app.post('/register', (req, res) => {
         console.log('Connected to the login database.');
     });
     db.serialize(function () {
-        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT)');
-        db.run(`INSERT INTO user(username, name, password) VALUES('${req.body.username}', '${req.body.name}','${req.body.password}')`);
+        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
+        db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
         db.all('SELECT * FROM user', [], (err, rows) => {
             if (err) {
                 throw err;
             }
             console.log(rows);
-            rows.forEach((row) => {
-                console.log(row);
-            });
         });
-    })    
+    })
     db.close();
     res.send('done');
 })
@@ -233,10 +246,10 @@ app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT
 
 //Post for login, authenticates the passcode and sets the cookie. Very unsecure
 // search: loginpost
-app.post('/login', (req, res) => {
+app.post('/login/admin', (req, res) => {
     if (req.body.pass == "6456") {
         res.cookie("auth", "authenticated", { maxAge: 86400000 });
-        res.redirect("/panel");
+        res.redirect("/admin/panel");
     }
 });
 
@@ -367,7 +380,7 @@ var addtowaitlist = (req, res) => {
         if (!('sound' in data.people.waitlist)) {
             data.people.waitlist.sound = [];
         }
-        data.people.waitlist.sound.push({"name" : req.body.name, "pass" : req.body.pass});
+        data.people.waitlist.sound.push({ "name": req.body.name, "pass": req.body.pass });
     } else if (position == 2) {
         if (!('lights' in data.people.waitlist)) {
             data.people.waitlist.lights = [];
@@ -500,17 +513,16 @@ function connecttodb(callback) {
         }
         console.log('Connected to the login database.');
     });
-    db.run('CREATE TABLE IF NOT EXISTS user(name text, password int)')
     return db;
     callback();
 }
 //page that has a list of events
-app.get('*',  (req, res) => {
+app.get('*', (req, res) => {
     res.status(404);
     res.redirect('/');
 });
 
-app.listen(port,  () => { //START WEBSERVER
+app.listen(port, () => { //START WEBSERVER
     console.log(`The server has started on ${port}`);
     generate();
 })
