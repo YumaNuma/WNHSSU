@@ -2,7 +2,8 @@ doctype html
 title #{datai.name}
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
-include includes/head.pug
+head
+  include includes/head.pug
 include includes/loginbutton.pug
 .w3-container.w3-top-left
   if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
