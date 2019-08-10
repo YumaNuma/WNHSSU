@@ -8,17 +8,12 @@ include includes/loginbutton.pug
 a(href='javascript:history.back()')
   button.w3-btn.w3-black.w3-mobile.w3-xlarge.w3-section Go back
 
-.w3-animate-opacity(style="display: block; width:70%; margin: auto")
-  form.w3-card-4.w3-mobile.w3-animate-opacity.w3-border-black.w3-white(action="/events/" + datai.id + "/waitlist" method='POST')
+.w3-animate-opacity(style="display: block; width:50%; margin: auto")
+  form.w3-card-4.w3-mobile.w3-animate-opacity.w3-border-black.w3-white(action="/events/" + datai.id + "/waitlist" method='POST' style="width: 90%")
     fieldset
       // Form Name
       legend.w3-text-red.w3-xxxlarge Join waitlist for event
       // Text input
-      b
-        label.w3-xlarge(for='name') Name
-      br
-      input#name.w3-input.w3-border(name='name' type='text' placeholder='Your Name' maxlength="25" required)
-      br
       div
         b
           label.w3-xlarge(for='pos') Position
@@ -38,16 +33,19 @@ a(href='javascript:history.back()')
               input#pn-2.w3-radio(type='radio' name='pos' value='3')
               | Backstage
               br
-      br
-      label(for='pass') 4-digit password (Incase you would like to remove yourself)
-        br
-        input#name.w3-input.w3-border(name='pass' type='text' placeholder='4 Letter password' minlength="4" maxlength="4" required)
+          input(type="hidden" value=name name="name")
+          input(type="hidden" value=username name="username")
       br
       // Button
       div
-        label(for='submit')
-        div
-          button#submit.w3-btn.w3-green.w3-xlarge(type='submit' name='submit') submit
+        if(username && name)
+          label(for='submit')
+          div
+            button#submit.w3-btn.w3-black.w3-xlarge(type='submit' name='submit') submit
+        else 
+          label(for='login')
+          div
+            .w3-section.w3-red.w3-xxlarge(name='login') Please sign in
     br
 
 
