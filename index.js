@@ -6,6 +6,7 @@ var bodyParser = require("body-parser"); //PARSING POST URL QUERIES
 const fs = require("fs");//FILE SYSTEM
 var cookieParser = require('cookie-parser');
 var helmet = require('helmet');
+var request = require('request');
 const sqlite3 = require('sqlite3').verbose();
 //end of declaration of libraries
 
@@ -88,7 +89,7 @@ app.get("/events", (req, res) => { //LIST OF EVENTS
     }
     var u = checkiflogged(req);
     var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
-    res.render("index", { els: el.events, username: u});
+    res.render("index", { els: el.events, username: u });
 });
 
 app.post('/user/logout', (req, res) => {
@@ -126,13 +127,13 @@ app.get('/events/:eventId/signup', (req, res) => { //signup
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     var u = req.cookies.isloggedname;
     var n = req.cookies.islogged;
-    res.render("signup", { datai: data, username: u, name: n});
+    res.render("signup", { datai: data, username: u, name: n });
 });
 
 //Unsign up for event page
 // search: unsignup1
 app.get('/events/:eventId/:position/delete', (req, res) => {
-        unsignup(req, res)
+    unsignup(req, res)
 });
 
 //join the waitlist page
@@ -141,7 +142,7 @@ app.get('/events/:eventId/waitlist', (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     var u = req.cookies.isloggedname;
     var n = req.cookies.islogged;
-    res.render('waitlist', { datai: data, username: u, name: n});
+    res.render('waitlist', { datai: data, username: u, name: n });
 });
 
 
@@ -186,6 +187,23 @@ app.post('/register', (req, res) => {
             console.error(err);
         }
         console.log('Connected to the login database.');
+    });
+    console.log(req.body['g-recaptcha-reponse']);
+    if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
+        return res.json({ "responseCode": 1, "responseDesc": "Please select captcha" });
+    }
+    // Put your secret key here.
+    var secretKey = "6LebYEsUAAAAAF4g6p516ne8bNSV8v-ofSTfTovg";
+    // req.connection.remoteAddress will provide IP address of connected user.
+    var verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
+    // Hitting GET request to the URL, Google will respond with success or error scenario.
+    request(verificationUrl, function (error, response, body) {
+        body = JSON.parse(body);
+        // Success will be true or false depending upon captcha validation.
+        if (body.success !== undefined && !body.success) {
+            return res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
+        }
+        res.json({ "responseCode": 0, "responseDesc": "Sucess" });
     });
     db.serialize(function () {
         db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
@@ -332,8 +350,12 @@ app.post('/events/:eventId/setpos', (req, res) => {
 //post for waitlist
 // search: waitlistpost
 app.post('/events/:eventId/waitlist', (req, res) => {
-    addtowaitlist(req, res, req.body.name, req.body.username);
-    res.redirect(`/events/${req.params.eventId}`);
+    try {
+        addtowaitlist(req, res, req.body.name, req.body.username);
+        res.redirect(`/events/${req.params.eventId}`);
+    } catch (e) {
+        res.render("error", { error: e });
+    }
 });
 
 /*
@@ -367,22 +389,35 @@ var addtowaitlist = (req, res, n, p) => {
         data.people.waitlist = {};
     }
     if (position == 1) {
-        if (!('sound' in data.people.waitlist)) {
-            data.people.waitlist.sound = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('sound' in data.people.waitlist)) {
+                data.people.waitlist.sound = [];
+            }
+            data.people.waitlist.sound.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.sound.push({ "name": n, "pass": p });
     } else if (position == 2) {
-        if (!('lights' in data.people.waitlist)) {
-            data.people.waitlist.lights = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('lights' in data.people.waitlist)) {
+                data.people.waitlist.lights = [];
+            }
+            data.people.waitlist.lights.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.lights.push({ "name": n, "pass": p });
     } else if (position == 3) {
-        if (!('backstage' in data.people.waitlist)) {
-            data.people.waitlist.backstage = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('backstage' in data.people.waitlist)) {
+                data.people.waitlist.backstage = [];
+            }
+            data.people.waitlist.backstage.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.backstage.push({ "name": n, "pass": p });
     }
     fs.writeFileSync(path, JSON.stringify(data));
+
 }
 
 var addtofile = (id1, name1, date, pos) => { //ADD TO ARRAY OF EVENTLIST JSON
@@ -470,6 +505,9 @@ var checkwaitlist = (a, p) => {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
+        if (!req.cookies.islogged || !req.cookies.isloggedname) {
+            throw "YOU ARE NOT LOGGED IN";
+        }
         if (req.params.position == "sound") {
             if (req.cookies.isloggedname == data.people.soundpass || authenticated(req)) {
                 delete data.people.sound;
