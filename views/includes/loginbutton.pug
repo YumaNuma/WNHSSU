@@ -1,7 +1,9 @@
+
 center
   div.w3-container.w3-black
     b
-      p.w3-xxxlarge Event List
+      a(href='/')
+        p.w3-xxxlarge Event List
       unless(username)
         button.w3-black.w3-hover-grey(onclick="document.getElementById('id01').style.display='block'" style='width:auto;') Login
         button.w3-black.w3-hover-grey(onclick="document.getElementById('id02').style.display='block'" style='width:auto;') Register
@@ -48,6 +50,7 @@ center
       label(for='password')
         b Password
       input(type='password' placeholder='Enter Password' name='password' required='')
+      .g-recaptcha(data-sitekey='6LebYEsUAAAAACRDus6tf9efYXkbJ220VLw_G5wU')
       button.w3-black(type='submit') Register
 script.
   // Get the modal
@@ -66,3 +69,19 @@ script.
   modal.style.display = "none";
   }
   }
+script.
+  $(document).ready(function() {
+  $('#id02').submit(function() {
+  $(this).ajaxSubmit({
+  error: function(xhr) {
+  status('Error: ' + xhr.status);
+  },
+  success: function(response) {
+  console.log(response);
+  }
+  });
+  //Very important line, it disable the page refresh.
+  return false;
+  });
+  });
+
