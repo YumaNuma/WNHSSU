@@ -188,7 +188,6 @@ app.post('/register', (req, res) => {
         }
         console.log('Connected to the login database.');
     });
-    console.log(req.body['g-recaptcha-reponse']);
     if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
         return res.json({ "responseCode": 1, "responseDesc": "Please select captcha" });
     }
@@ -197,27 +196,39 @@ app.post('/register', (req, res) => {
     // req.connection.remoteAddress will provide IP address of connected user.
     var verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
     // Hitting GET request to the URL, Google will respond with success or error scenario.
+
     request(verificationUrl, function (error, response, body) {
         body = JSON.parse(body);
         // Success will be true or false depending upon captcha validation.
         if (body.success !== undefined && !body.success) {
-            return res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
+            res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
         }
-        res.json({ "responseCode": 0, "responseDesc": "Sucess" });
+        var groles;
+        try {
+            db.serialize(function () {
+                db.get("SELECT * FROM user WHERE username=? OR pnumber=?", [req.body.id, req.body.id], function (error, row) {
+                    groles = row;
+                });
+            });
+                if (groles !== undefined) {
+                    db.serialize(function () {
+                        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
+                        db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
+                        db.close();
+                    });
+                    res.redirect(req.header('Referer') || '/');
+                }
+                else {
+                    throw "There is already a user with that name or number";
+                };
+
+        } catch (e) {
+            res.render('error', { error: e });
+        }
     });
-    db.serialize(function () {
-        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
-        db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
-        db.all('SELECT * FROM user', [], (err, rows) => {
-            if (err) {
-                throw err;
-            }
-            console.log(rows);
-        });
-    })
-    db.close();
-    res.redirect(req.header('Referer') || '/');
 })
+
+
 app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
