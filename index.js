@@ -6,6 +6,8 @@ var bodyParser = require("body-parser"); //PARSING POST URL QUERIES
 const fs = require("fs");//FILE SYSTEM
 var cookieParser = require('cookie-parser');
 var helmet = require('helmet');
+var request = require('request');
+const sqlite3 = require('sqlite3').verbose();
 //end of declaration of libraries
 
 //begin of global variables
@@ -18,6 +20,7 @@ var options;
 //end of global variables
 
 //begin of settings for express
+app.use(cookieParser());
 app.use(helmet());
 app.use(function (req, res, next) {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
@@ -31,12 +34,18 @@ app.use(function (req, res, next) {
     }
     next();
 })
+app.use('/admin/*', (req, res, next) => {
+    if (authenticated(req)) {
+        next();
+    } else {
+        res.redirect('/login/admin')
+    }
+})
 app.use(bodyParser.json()); //USE BODYPARSER
 app.use(express.static(__dirname + '/views'));
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set('views', __dirname + '/views'); //SET THE VIEW FOLDER
 app.set('view engine', 'pug'); //SET THE VIEW ENGINE
-app.use(cookieParser());
 //end of settings for express
 
 
@@ -52,47 +61,55 @@ app.use(cookieParser());
 
 //ADMIN PANEL
 //search: panel1
-app.get("/panel", function (req, res) {
-    if (authenticated(req)) {
-        res.sendFile("/views/panel.html", { root: __dirname });
-    } else {
-        res.redirect('/login');
-    }
+app.get("/admin/panel", function (req, res) {
+    res.sendFile("/views/panel.html", { root: __dirname });
 });
 
+app.get('/login/user', (req, res) => {
+    res.render('login');
+});
+//Create event page (Crew Chief Only)
+//search: createevent1
+app.get("/admin/createevent", (req, res) => {
+    res.sendFile("/views/createevent.html", { root: __dirname });
+});
+
+app.get('/login/admin', (req, res) => {
+    res.render("loginadmin", { root: __dirname });
+});
+app.get('/events/:eventId/delete', (req, res) => {
+    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
+    res.sendFile("/views/delete.html", { root: __dirname });
+});
 //Event list page
 //search: event1
 app.get("/events", (req, res) => { //LIST OF EVENTS
     if (!fs.existsSync(__dirname + "/events/eventlist.json")) {
         fs.writeFileSync(__dirname + "/events/eventlist.json", JSON.stringify({ "events": [] }))
     }
+    var u = checkiflogged(req);
     var el = JSON.parse(fs.readFileSync(__dirname + "/events/eventlist.json"))
-    res.render("index", { els: el.events });
+    res.render("index", { els: el.events, username: u });
 });
 
-//Create event page (Crew Chief Only)
-//search: createevent1
-app.get("/createevent", (req, res) => {
-    if (authenticated(req)) {
-        res.sendFile("/views/createevent.html", { root: __dirname });
-    } else {
-        res.redirect('/login');
-    }
-});
+app.post('/user/logout', (req, res) => {
+    res.clearCookie('islogged');
+    res.clearCookie('isloggedname');
+    res.redirect(req.header('Referer') || '/');
+})
+
 
 //Dynamic page for an event
 //search: eventpage1
 app.get('/events/:eventId', (req, res) => { // RETRIEVE DATA OF EVENT
     var admin = authenticated(req);
+    var u = checkiflogged(req);
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render("viewpage", { datai: data, isadmin: admin })
+    res.render("viewpage", { datai: data, isadmin: admin, username: u })
 });
 
 //login (Crew Chief Only)
 // search: login1
-app.get('/login', (req, res) => {
-    res.sendFile("/views/login.html", { root: __dirname });
-});
 
 //redirects to events
 // search: eventredirect1
@@ -102,33 +119,30 @@ app.get("/", (req, res) => { //MAIN PAGE REDIRECT TO EVENTS
 
 //Delete an event
 // search: delete1
-app.get('/events/:eventId/delete', (req, res) => {
-    var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`))
-    res.sendFile("/views/delete.html", { root: __dirname });
-});
+
 
 //the signup for the event page
 // search: signup1
 app.get('/events/:eventId/signup', (req, res) => { //signup
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render("signup", { datai: data });
+    var u = req.cookies.isloggedname;
+    var n = req.cookies.islogged;
+    res.render("signup", { datai: data, username: u, name: n });
 });
 
 //Unsign up for event page
 // search: unsignup1
 app.get('/events/:eventId/:position/delete', (req, res) => {
-    if (authenticated(req)) {
-        unsignup(req, res);
-    } else {
-        res.sendFile('/views/remove.html', { root: __dirname });
-    }
+    unsignup(req, res)
 });
 
 //join the waitlist page
 // search: waitlist1
 app.get('/events/:eventId/waitlist', (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-    res.render('waitlist', { datai: data});
+    var u = req.cookies.isloggedname;
+    var n = req.cookies.islogged;
+    res.render('waitlist', { datai: data, username: u, name: n });
 });
 
 
@@ -144,6 +158,77 @@ app.get('/events/:eventId/waitlist', (req, res) => {
 
 //Create an event post
 // search: createeventpost
+app.post('/login/user', (req, res) => {
+    var db = new sqlite3.Database('./user.db', (err) => {
+        if (err) { console.log(err) };
+        console.log("Connect to login database")
+    });
+    db.serialize(function () {
+        db.get(`SELECT * FROM user WHERE username=? OR pnumber=?`, [req.body.id, req.body.id], (err, rows) => {
+            if (!rows || rows == null || rows == undefined) {
+                res.send('no user with that name or number');
+            } else {
+                if (rows.password == req.body.password) {
+                    res.cookie('islogged', rows.name, { maxAge: 900000, httpOnly: true });
+                    res.cookie('isloggedname', rows.username, { maxAge: 900000, httpOnly: true });
+                    res.redirect(req.header('Referer') || '/');
+                } else {
+                    res.send("Incorrect password");
+                }
+            }
+        });
+
+    });
+    db.close();
+})
+app.post('/register', (req, res) => {
+    var db = new sqlite3.Database('./user.db', (err) => {
+        if (err) {
+            console.error(err);
+        }
+        console.log('Connected to the login database.');
+    });
+    if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
+        return res.json({ "responseCode": 1, "responseDesc": "Please select captcha" });
+    }
+    // Put your secret key here.
+    var secretKey = '6LebYEsUAAAAAF4g6p516ne8bNSV8v-ofSTfTovg';
+    // req.connection.remoteAddress will provide IP address of connected user.
+    var verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
+    // Hitting GET request to the URL, Google will respond with success or error scenario.
+
+    request(verificationUrl, function (error, response, body) {
+        body = JSON.parse(body);
+        // Success will be true or false depending upon captcha validation.
+        if (body.success !== undefined && !body.success) {
+            res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
+        }
+        var groles;
+        try {
+            db.serialize(function () {
+                db.get("SELECT * FROM user WHERE username=? OR pnumber=?", [req.body.id, req.body.id], function (error, row) {
+                    groles = row;
+                });
+            });
+                if (groles !== undefined) {
+                    db.serialize(function () {
+                        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
+                        db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
+                        db.close();
+                    });
+                    res.redirect(req.header('Referer') || '/');
+                }
+                else {
+                    throw "There is already a user with that name or number";
+                };
+
+        } catch (e) {
+            res.render('error', { error: e });
+        }
+    });
+})
+
+
 app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -187,10 +272,10 @@ app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT
 
 //Post for login, authenticates the passcode and sets the cookie. Very unsecure
 // search: loginpost
-app.post('/login', (req, res) => {
+app.post('/login/admin', (req, res) => {
     if (req.body.pass == "6456") {
         res.cookie("auth", "authenticated", { maxAge: 86400000 });
-        res.redirect("/panel");
+        res.redirect("/admin/panel");
     }
 });
 
@@ -208,21 +293,14 @@ app.post('/events/:eventId/delete', (req, res) => {
     res.redirect("/events")
 });
 
-//unsignup for event post
-// search: unsignuppost
-app.post('/events/:eventId/:position/delete', (req, res) => {
-    unsignup(req, res);
-});
-
 //the post url where the data from the event signup page goes to
 // search: signuppost
 app.post('/events/:eventId/setpos', (req, res) => {
     try {
-        var fname = req.body.name;
         var fpos = req.body.pos;
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
-        var fpass = req.body.pass;
-        fname = capitalize(fname);
+        var fname = req.body.name;
+        var fpass = req.body.username;
         if (fpos == "1") {
             if (!('sound' in fdata.people)) {
                 if (fname == fdata.people.lights) {
@@ -283,8 +361,12 @@ app.post('/events/:eventId/setpos', (req, res) => {
 //post for waitlist
 // search: waitlistpost
 app.post('/events/:eventId/waitlist', (req, res) => {
-    addtowaitlist(req, res);
-    res.redirect(`/events/${req.params.eventId}`);
+    try {
+        addtowaitlist(req, res, req.body.name, req.body.username);
+        res.redirect(`/events/${req.params.eventId}`);
+    } catch (e) {
+        res.render("error", { error: e });
+    }
 });
 
 /*
@@ -310,7 +392,7 @@ var authenticated = (r) => {
     }
 };
 
-var addtowaitlist = (req, res) => {
+var addtowaitlist = (req, res, n, p) => {
     var path = __dirname + `/events/${req.params.eventId}.json`;
     var data = JSON.parse(fs.readFileSync(path));
     var position = req.body.pos;
@@ -318,22 +400,35 @@ var addtowaitlist = (req, res) => {
         data.people.waitlist = {};
     }
     if (position == 1) {
-        if (!('sound' in data.people.waitlist)) {
-            data.people.waitlist.sound = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('sound' in data.people.waitlist)) {
+                data.people.waitlist.sound = [];
+            }
+            data.people.waitlist.sound.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.sound.push({"name" : req.body.name, "pass" : req.body.pass});
     } else if (position == 2) {
-        if (!('lights' in data.people.waitlist)) {
-            data.people.waitlist.lights = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('lights' in data.people.waitlist)) {
+                data.people.waitlist.lights = [];
+            }
+            data.people.waitlist.lights.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.lights.push({ "name": req.body.name, "pass": req.body.pass });
     } else if (position == 3) {
-        if (!('backstage' in data.people.waitlist)) {
-            data.people.waitlist.backstage = [];
+        if (!(n == data.people.sound || n == data.people.lights || n == data.people.backstage)) {
+            if (!('backstage' in data.people.waitlist)) {
+                data.people.waitlist.backstage = [];
+            }
+            data.people.waitlist.backstage.push({ "name": n, "pass": p });
+        } else {
+            throw "You are already in a position!";
         }
-        data.people.waitlist.backstage.push({ "name": req.body.name, "pass": req.body.pass });
     }
     fs.writeFileSync(path, JSON.stringify(data));
+
 }
 
 var addtofile = (id1, name1, date, pos) => { //ADD TO ARRAY OF EVENTLIST JSON
@@ -375,11 +470,14 @@ var generate = () => {
 var checkwaitlist = (a, p) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
     if (p == "sound") {
+        console.log(data.people.waitlist.sound.length + "Sound Length");
         if (data.people.waitlist.sound.length > 1) {
-            var temp = data.people.waitlist.sound.shift();
+            var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
-        } else if (data.people.waitlist.sound.length == 1) {
+            data.people.waitlist.sound.shift();
+        } else if (data.people.waitlist.sound.length === 1) {
+            console.log("NOOO")
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
@@ -387,10 +485,11 @@ var checkwaitlist = (a, p) => {
         }
     } else if (p == "lights") {
         if (data.people.waitlist.lights.length > 1) {
-            var temp = data.people.waitlist.lights.shift();
+            var temp = data.people.waitlist.lights[0];
             data.people.lights = temp.name;
             data.people.lightpass = temp.pass;
-        } else if (data.people.waitlist.lights.length == 1) {
+            data.people.waitlist.lights.shift();
+        } else if (data.people.waitlist.lights.length === 1) {
             var temp = data.people.waitlist.lights[0];
             data.people.lights = temp.name;
             data.people.lightpass = temp.pass;
@@ -398,10 +497,11 @@ var checkwaitlist = (a, p) => {
         }
     } else if (p == "backstage") {
         if (data.people.waitlist.backstage.length > 1) {
-            var temp = data.people.waitlist.backstage.shift();
+            var temp = data.people.waitlist.backstage[0];
             data.people.backstage = temp.name;
             data.people.backstagepass = temp.pass;
-        } else if (data.people.waitlist.backstage.length == 1) {
+            data.people.waitlist.backstage.shift();
+        } else if (data.people.waitlist.backstage.length === 1) {
             var temp = data.people.waitlist.backstage[0];
             data.people.backstage = temp.name;
             data.people.backstagepass = temp.pass;
@@ -416,22 +516,25 @@ var checkwaitlist = (a, p) => {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
+        if (!req.cookies.islogged || !req.cookies.isloggedname) {
+            throw "YOU ARE NOT LOGGED IN";
+        }
         if (req.params.position == "sound") {
-            if (req.body.pass == data.people.soundpass || authenticated(req)) {
+            if (req.cookies.isloggedname == data.people.soundpass || authenticated(req)) {
                 delete data.people.sound;
                 delete data.people.soundpass;
             } else {
                 throw "Incorrect Passcode";
             }
         } else if (req.params.position == "lights" || authenticated(req)) {
-            if (req.body.pass == data.people.lightpass) {
+            if (req.cookies.isloggedname == data.people.lightpass) {
                 delete data.people.lights;
                 delete data.people.lightpass;
             } else {
                 throw "Incorrect Passcode";
             }
         } else if (req.params.position == "backstage" || authenticated(req)) {
-            if (req.body.pass == data.people.backstagepass) {
+            if (req.cookies.isloggedname == data.people.backstagepass) {
                 delete data.people.backstage;
                 delete data.people.backstagepass;
             } else {
@@ -447,13 +550,30 @@ var unsignup = (req, res) => {
         res.render('error', { error: e });
     }
 };
+function connecttodb(callback) {
+    let db = new sqlite3.Database('./user.db', (err) => {
+        if (err) {
+            console.error(err.message);
+        }
+        console.log('Connected to the login database.');
+    });
+    return db;
+    callback();
+}
+function checkiflogged(r) {
+    var username1 = "";
+    if (r.cookies.islogged) {
+        username1 = r.cookies.islogged;
+    }
+    return username1;
+}
 //page that has a list of events
-app.get('*',  (req, res) => {
+app.get('*', (req, res) => {
     res.status(404);
     res.redirect('/');
 });
 
-app.listen(port,  () => { //START WEBSERVER
+app.listen(port, () => { //START WEBSERVER
     console.log(`The server has started on ${port}`);
     generate();
 })
