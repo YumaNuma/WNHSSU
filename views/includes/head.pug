@@ -1,13 +1,8 @@
-﻿    
-doctype html
-title Williamsville North Crew Calendar
-meta(name='viewport' content='width=device-width, initial-scale=1')
-link(rel='stylesheet' href='/css/w3.css')
 script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js')
 script(src='http://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js')
 script(src='https://www.google.com/recaptcha/api.js')
 style.
-  html {
+  body {
   height: 100%;
   background: 
     linear-gradient(rgba(196, 102, 0, 0.6), rgba(155, 89, 182, 0.6));
@@ -124,15 +119,3 @@ style.
   width: 100%;
   }
   }
-
-link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
-include includes/loginbutton.pug
-.w3-container(style="margin: auto;")
-  each event in els
-   .w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%; margin:auto')
-     a(href='/events/' + event.id)
-      header.w3-container.w3-border.w3-topbar
-       b
-        p.w3-xxlarge.w3-center #{event.name}
-  else
-    h1.w3-display-middle.w3-xxlarge There are no upcoming Events

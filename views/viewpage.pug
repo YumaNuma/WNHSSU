@@ -3,28 +3,24 @@ title #{datai.name}
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
 head
-  style.
-    body {
-    background-image: linear-gradient(to right, yellow , green);
-    }
-if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
-  a(href='/events/' + datai.id + '/waitlist')
-    button.w3-mobile.w3-btn.w3-green.w3-xlarge.w3-section Click here to join the waitlist
-    br
-unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
-  a(href='/events/' + datai.id + '/signup')
-    button.w3-btn.w3-green.w3-xlarge.w3-section.w3-mobile Click here to sign up
-    br
-a(href='/')
-  button.w3-btn.w3-green.w3-mobile.w3-xlarge.w3-section Go back home
-unless !isadmin
-  br
-  a(href='/events/' + datai.id + "/delete")
-    button.w3-btn.w3-green.w3-mobile Delete this event
-.w3-card-4.w3-mobile.w3-animate-opacity(style='width:50%; margin:auto')
-  header.w3-container.w3-light-grey
+  include includes/head.pug
+include includes/loginbutton.pug
+.w3-container.w3-top-left
+  if ('sound' in datai.people) ||('lights' in datai.people) ||('backstage' in datai.people)
+    a(href='/events/' + datai.id + '/waitlist')
+      button.w3-mobile.w3-btn.w3-black.w3-xlarge Click here to join the waitlist
+  unless (datai.pos == "Sound Only" && 'sound' in datai.people) ||(datai.pos == "Sound & Lights" && 'sound' in datai.people && 'lights' in datai.people) ||(datai.pos == "Sound & Lights & Backstage" && 'sound' in datai.people && 'lights' in datai.people && 'backstage' in datai.people)
+    a(href='/events/' + datai.id + '/signup')
+      button.w3-btn.w3-black.w3-xlarge.w3-mobile Click here to sign up
+  a(href='/')
+    button.w3-btn.w3-black.w3-mobile.w3-xlarge Go back home
+  unless !isadmin
+    a(href='/events/' + datai.id + "/delete")
+      button.w3-btn.w3-black.w3-mobile Delete this event
+.w3-card-4.w3-mobile.w3-animate-opacity.w3-border-black(style='width:50%; margin:auto')
+  header.w3-container.w3-black
     b
-      p.w3-xxxlarge.w3-text-red #{datai.name}
+      p.w3-xxxlarge.w3-text-white #{datai.name}
   .w3-container.w3-light-grey.w3-border-top
     p.w3-xlarge
       | Date: #{datai.date.month} #{datai.date.day}, #{datai.date.year}
@@ -78,3 +74,6 @@ unless !isadmin
     .w3-topbar.w3-container
       b
         p.w3-xlarge LOCATION: #{datai.location} 
+br
+br
+include includes/footer.pug

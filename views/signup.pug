@@ -3,26 +3,16 @@ title Sign Up
 meta(name='viewport' content='width=device-width, initial-scale=1')
 link(rel='stylesheet' href='/css/w3.css')
 link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
-head
-  style.
-    body {
-    background-image: linear-gradient(to right, yellow , green);
-    }
-    p {
-    font-family: 'Roboto', sans-serif;
-    }
+include includes/head.pug
+include includes/loginbutton.pug
 a(href='javascript:history.back()')
-  button.w3-btn.w3-green.w3-xlarge.w3-mobile Go back
-.w3-animate-opacity
-  form.w3-display-middle.w3-container.w3-card-4.w3-light-grey.w3-mobile(action="/events/" + datai.id + "/setpos" method='POST')
+  button.w3-btn.w3-black.w3-xlarge.w3-mobile(style="display: block") Go back
+.w3-animate-opacity.w3-container.w3-section(style="dispaly: block; margin: auto; width: 50%")
+  form.w3-container.w3-card-4.w3-light-grey.w3-mobile.w3-border(action="/events/" + datai.id + "/setpos" method='POST')
     fieldset
       // Form Name
       legend.w3-text-red.w3-jumbo Signup for event
       // Text input
-      b
-        label.w3-xlarge(for='name') Name
-      br
-      input#name.w3-input.w3-border(name='name' type='text' placeholder='Your Name' maxlength="25" required)
       br
       div
         b
@@ -43,17 +33,21 @@ a(href='javascript:history.back()')
             input#pn-2.w3-radio(type='radio' name='pos' value='3')
             | Backstage
             br
-      br 
-      label(for='pass') 4-digit password (Incase you would like to remove yourself)
-        br
-        input#name.w3-input.w3-border(name='pass' type='text' placeholder='4 Letter password' minlength="4" maxlength="4" required)
+        input(type="hidden" value=name name="name")
+        input(type="hidden" value=username name="username")
       br
       // Button
       div
-        label(for='submit')
-        div
-          button#submit.w3-btn.w3-green.w3-xlarge(type='submit' name='submit') submit
+        if(username && name)
+          label(for='submit')
+          div
+            button#submit.w3-btn.w3-black.w3-xlarge(type='submit' name='submit') submit
+        else 
+          label(for='login')
+          div
+            .w3-section.w3-red.w3-xxlarge(name='login') Please sign in
     br
+include includes/footer.pug
 
 
 

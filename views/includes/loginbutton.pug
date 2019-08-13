@@ -1,0 +1,72 @@
+
+center
+  div.w3-container.w3-black
+    b
+      a(href='/')
+        p.w3-xxxlarge Event List
+      unless(username)
+        button.w3-black.w3-hover-grey(onclick="document.getElementById('id01').style.display='block'" style='width:auto;') Login
+        button.w3-black.w3-hover-grey(onclick="document.getElementById('id02').style.display='block'" style='width:auto;') Register
+      a(href='https://github.com/zaida04/WNSU')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Github
+      a(href='/admin/panel')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Admin Panel
+      a(href='/')
+        button.w3-black.w3-hover-grey(onclick="document.style.display='block'" style='width:auto;') Home Page
+      if(username) 
+        button.w3-text-red.w3-black.w3-hover-grey(style='width:auto;') Hello #{username}!
+        form(action='/user/logout' method='POST')
+          button.w3-black.w3-hover-grey(type="submit" style='width:auto;') Log Out
+#id01.modal
+  form.modal-content.animate(action='/login/user' method="POST" style="width: 50%;")
+    legend.w3-display-topmiddle.w3-xxlarge LOGIN
+    .imgcontainer
+      span.close(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
+      br
+    .container
+      label(for='id')
+        b Username or Phone Number
+      input(type='text' placeholder='Enter Username or Phone Number' name='id' required='')
+      label(for='password')
+        b Password
+      input(type='password' placeholder='Enter Password' name='password' required='')
+      button.w3-black(type='submit') Login
+#id02.modal
+  form.modal-content.animate(action='/register' method="POST" style="width: 50%;")
+    legend.w3-display-topmiddle.w3-xxlarge Register
+    .imgcontainer
+      span.close(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
+      br
+    .container
+      label(for='username')
+        b Username
+      input(type='text' placeholder='Enter Username or Phone Number' name='username' required='')
+      label(for='fullname')
+        b Full Name
+      input(type='text' placeholder='Enter Full Name' name='fullname' required='')
+      label(for='pnumber')
+        b Phone Number
+      input(type='text' placeholder='Enter Phone Number' name='pnumber' required='')
+      label(for='password')
+        b Password
+      input(type='password' placeholder='Enter Password' name='password' required='')
+      .g-recaptcha(data-sitekey='6LebYEsUAAAAACRDus6tf9efYXkbJ220VLw_G5wU')
+      button.w3-black(type='submit') Register
+script.
+  // Get the modal
+  var modal = document.getElementById('id01');
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+  if (event.target == modal) {
+  modal.style.display = "none";
+  }
+  }
+  // Get the modal
+  var modal = document.getElementById('id02');
+  // When the user clicks anywhere outside of the modal, close it
+  window.onclick = function(event) {
+  if (event.target == modal) {
+  modal.style.display = "none";
+  }
+  }
+
