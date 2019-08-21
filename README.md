@@ -10,22 +10,22 @@
   - Create events at: http://127.0.0.1/createevent
   - Event List at: http://127.0.0.1/events
 
-LIVE DEMO AT [HERE](http://138.197.60.43/)
+LIVE DEMO AT [HERE](https://stagecrew.yaznic.me)
   
 ## Current Features:
   - Sign up for events
   - Create event (Crew Chief only)
   - See list of events (Sorted by Recently Added)
   - See details of events & displays who is working events
-  - List of events automatically updates as soon as event is created by Crew Chief
   - Automatically hides positions that are already signed up.
   - Delete event page (Crew Chief only)
   - Automatically rejects same person sign ups for multiple positions 
   - Automatically hides unneeded positions
   - Ability to unsign up for events
-
+  - Waitlist
+  - User Base
+  
 ## Future Features:
-  - [ ] Waitlist
 
 ## Backstory:
   I made this system cause I was going crazy not knowing what events there were or who was working them or if someone was already working them. So I just decided to make my own system and hopefully have it implemented into the stage crew. This was developed by me, Zaid, through tears and my last remaining brain cells right after finals week. This could use a bit of refactoring, which I will attempt my best to do. I welcome contributors cause I am far from perfect and anyone is welcome to download this and use it for their own school or whatever.
