@@ -184,6 +184,9 @@ app.post('/login/user', (req, res) => {
     db.close();
 })
 app.post('/register', (req, res) => {
+    if (!req.body.classpass == 'stage2019') {
+        res.render('error', { error: "Incorrect Class Code" });
+    }
     var db = new sqlite3.Database('./user.db', (err) => {
         if (err) {
             console.error(err);
@@ -575,7 +578,7 @@ function searchuser(searchm, search, callback) {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
-        if (!req.cookies.auth || (!req.cookies.islogged || !req.cookies.isloggedname)) {
+        if (!req.cookies.islogged || !req.cookies.isloggedname || !req.cookies.auth ) {
             throw "YOU ARE NOT LOGGED IN";
         }
         if (req.params.position == "sound") {
