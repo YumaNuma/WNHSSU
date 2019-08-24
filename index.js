@@ -575,7 +575,7 @@ function searchuser(searchm, search, callback) {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
-        if (!req.cookies.islogged || !req.cookies.isloggedname) {
+        if (!req.cookies.auth || (!req.cookies.islogged || !req.cookies.isloggedname)) {
             throw "YOU ARE NOT LOGGED IN";
         }
         if (req.params.position == "sound") {
