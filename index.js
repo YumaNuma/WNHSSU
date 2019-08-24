@@ -224,12 +224,7 @@ app.post('/register', (req, res) => {
                 res.cookie('isloggedname', req.body.username, { maxAge: 3600000, httpOnly: true });
                 res.redirect(req.header('Referer') || '/');
                 var pnumber = numberify(req.body.pnumber);
-                client.messages
-                    .create({
-                        body: `Thank you ${req.body.fullname}, for creating an account on the Crew Calendar!`,
-                        from: '+17162216438',
-                        to: pnumber
-                    });
+                messageuser(`Thank you ${ req.body.fullname }, for creating an account on the Crew Calendar! You will be texted notifications! To stop these notifications, please message STOP`, pnumber)
             } else {
                 throw "There is already a user with this info";
             }
@@ -325,13 +320,8 @@ app.post('/events/:eventId/setpos', (req, res) => {
                     fdata.people.sound = fname;
                     fdata.people.soundpass = fpass;
                     searchuser("username", fpass, function (r) {
-                       pnum = numberify(r.pnumber);
-                        client.messages
-                            .create({
-                                body: `${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                from: '+17162216438',
-                                to: pnum
-                            });
+                        pnum = numberify(r.pnumber);
+                        messageuser(`${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                     })
                 }
             } else {
@@ -350,12 +340,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         fdata.people.lightpass = fpass;
                         searchuser("username", fpass, function (r) {
                             pnum = numberify(r.pnumber);
-                            client.messages
-                                .create({
-                                    body: `${r.name}, you have been signed up for the Light Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                    from: '+17162216438',
-                                    to: pnum
-                                });
+                            messageuser(`${r.name}, you have been signed up for the Lights Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -376,14 +361,8 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         fdata.people.backstage = fname;
                         fdata.people.backstagepass = fpass;
                         searchuser("username", fpass, function (r) {
-                            console.log("ye: " + r.pnumber + " r: " + r);
                             pnum = numberify(r.pnumber);
-                            client.messages
-                                .create({
-                                    body: `${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                    from: '+17162216438',
-                                    to: pnum
-                                });
+                            messageuser(`${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -434,6 +413,14 @@ var authenticated = (r) => {
     }
 };
 
+function messageuser(message, recepient) {
+    client.messages
+        .create({
+            body: message,
+            from: '+17162216438',
+            to: recepient
+        });
+}
 var addtowaitlist = (req, res, n, p) => {
     var path = __dirname + `/events/${req.params.eventId}.json`;
     var data = JSON.parse(fs.readFileSync(path));
@@ -447,6 +434,9 @@ var addtowaitlist = (req, res, n, p) => {
                 data.people.waitlist.sound = [];
             }
             data.people.waitlist.sound.push({ "name": n, "pass": p });
+            searchuser('username', p, function (r) {
+                messageuser(`Hey there, ${n}, you have been added to waitlist for the sound position of ${data.name}, on ${data.date.month} ${data.date.day}`, r.pnumber);
+            })
         } else {
             throw "You are already in a position!";
         }
@@ -456,6 +446,9 @@ var addtowaitlist = (req, res, n, p) => {
                 data.people.waitlist.lights = [];
             }
             data.people.waitlist.lights.push({ "name": n, "pass": p });
+            searchuser('username', p, function (r) {
+                messageuser(`Hey there, ${n}, you have been added to waitlist for the lights position of ${data.name}, on ${data.date.month} ${data.date.day}`, r.pnumber);
+            })
         } else {
             throw "You are already in a position!";
         }
@@ -465,6 +458,9 @@ var addtowaitlist = (req, res, n, p) => {
                 data.people.waitlist.backstage = [];
             }
             data.people.waitlist.backstage.push({ "name": n, "pass": p });
+            searchuser('username', p, function (r) {
+                messageuser(`Hey there, ${n}, you have been added to waitlist for the backstage position of ${data.name}, on ${data.date.month} ${data.date.day}`, r.pnumber);
+            })
         } else {
             throw "You are already in a position!";
         }
@@ -517,11 +513,13 @@ var checkwaitlist = (a, p) => {
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
             data.people.waitlist.sound.shift();
+            console.log('biggie cheese');
         } else if (data.people.waitlist.sound.length === 1) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
             delete data.people.waitlist.sound;
+            console.log('no u');
         }
     } else if (p == "lights") {
         if (data.people.waitlist.lights.length > 1) {
@@ -548,7 +546,8 @@ var checkwaitlist = (a, p) => {
             delete data.people.waitlist.backstage;
         }
     }
-    if (!(('sound' in data.people.waitlist) && ('lights' in data.people.waitlist) && ('backstage' in data.people.waitlist))) {
+    if (!('sound' in data.people.waitlist) && !('lights' in data.people.waitlist) && !('backstage' in data.people.waitlist)) {
+        console.log('no u i mean');
         delete data.people.waitlist;
     }
     fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
@@ -578,24 +577,19 @@ function searchuser(searchm, search, callback) {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
-        if (!req.cookies.islogged || !req.cookies.isloggedname || !req.cookies.auth ) {
+        if ((!req.cookies.islogged || !req.cookies.isloggedname) && !req.cookies.auth ) {
             throw "YOU ARE NOT LOGGED IN";
         }
         if (req.params.position == "sound") {
             if (req.cookies.isloggedname == data.people.soundpass || authenticated(req)) {
-                delete data.people.sound;
+                delete data.people.sound; 
                 delete data.people.soundpass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Sound Position of ${data.name}`,
-                            from: '+17162216438',
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Sound Position of ${data.name}`, pnum);
                 })
             } else {
-                throw "Incorrect Passcode";
+                throw "You are not the user that signed up!";
             }
         } else if (req.params.position == "lights") {
             if (req.cookies.isloggedname == data.people.lightpass || authenticated(req)) {
@@ -603,15 +597,10 @@ var unsignup = (req, res) => {
                 delete data.people.lightpass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Lights Position of ${data.name}`,
-                            from: '+17162216438',
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Lights Position of ${data.name}`, pnum)
                 });
             } else {
-                throw "Incorrect Passcode";
+                throw "You are not the user that signed up!";
             }
         } else if (req.params.position == "backstage") {
             if (req.cookies.isloggedname == data.people.backstagepass || authenticated(req)) {
@@ -619,15 +608,10 @@ var unsignup = (req, res) => {
                 delete data.people.backstagepass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Backstage Position of ${data.name}`,
-                            from: '+17162216438'  ,
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Backstage Position of ${data.name}`, pnum)
                 })
             } else {
-                throw "Incorrect Passcode";
+                throw "You are not the user that signed up!";
             }
         }
         fs.writeFileSync(__dirname + `/events/${req.params.eventId}.json`, JSON.stringify(data));
