@@ -8,9 +8,8 @@ var cookieParser = require('cookie-parser');
 var helmet = require('helmet');
 var request = require('request');
 const sqlite3 = require('sqlite3').verbose();
+var { accountSid, authToken, gcaptchac } = require('./config.json');
 //end of declaration of libraries
-const accountSid = 'AC323dabc9bdd9c14b457a32a4d1e6313c';
-const authToken = '442d7e6b6e5abbe6c7427a4f86920743';
 const client = require('twilio')(accountSid, authToken);
 
 
@@ -172,8 +171,8 @@ app.post('/login/user', (req, res) => {
                 res.send('no user with that name or number');
             } else {
                 if (rows.password == req.body.password) {
-                    res.cookie('islogged', rows.name, { maxAge: 900000, httpOnly: true });
-                    res.cookie('isloggedname', rows.username, { maxAge: 900000, httpOnly: true });
+                    res.cookie('islogged', rows.name, { maxAge: 3600000, httpOnly: true });
+                    res.cookie('isloggedname', rows.username, { maxAge: 3600000, httpOnly: true });
                     res.redirect(req.header('Referer') || '/');
                 } else {
                     res.send("Incorrect password");
@@ -194,7 +193,7 @@ app.post('/register', (req, res) => {
         return res.json({ "responseCode": 1, "responseDesc": "Please select captcha" });
     }
     // Put your secret key here.
-    var secretKey = '6LebYEsUAAAAAF4g6p516ne8bNSV8v-ofSTfTovg';
+    var secretKey = gcaptchac;
     // req.connection.remoteAddress will provide IP address of connected user.
     var verificationUrl = "https://www.google.com/recaptcha/api/siteverify?secret=" + secretKey + "&response=" + req.body['g-recaptcha-response'] + "&remoteip=" + req.connection.remoteAddress;
     // Hitting GET request to the URL, Google will respond with success or error scenario.
@@ -210,7 +209,7 @@ app.post('/register', (req, res) => {
             res.render('error', { error: e });
         }
     });
-    checkdb(db, req, pnumber, (row1, p) => {
+    checkdb(db, req, req.body.pnumber, (row1, p) => {
         try {
             if (row1 == undefined) {
                 db.serialize(function () {
@@ -218,8 +217,8 @@ app.post('/register', (req, res) => {
                     db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
                     db.close();
                 });
-                res.cookie('islogged', req.body.fullname, { maxAge: 900000, httpOnly: true });
-                res.cookie('isloggedname', req.body.username, { maxAge: 900000, httpOnly: true });
+                res.cookie('islogged', req.body.fullname, { maxAge: 3600000, httpOnly: true });
+                res.cookie('isloggedname', req.body.username, { maxAge: 3600000, httpOnly: true });
                 res.redirect(req.header('Referer') || '/');
                 var pnumber = numberify(req.body.pnumber);
                 client.messages
@@ -238,7 +237,7 @@ app.post('/register', (req, res) => {
 
 });
 function numberify(input) {
-    return '+1' + input.replace(/\s/g, '');
+    return '+1' + input.toString().replace(/\s/g, '');
 }
 app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
@@ -312,6 +311,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
         var fdata = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
         var fname = req.body.name;
         var fpass = req.body.username;
+        var pnum;
         if (fpos == "1") {
             if (!('sound' in fdata.people)) {
                 if (fname == fdata.people.lights) {
@@ -321,12 +321,13 @@ app.post('/events/:eventId/setpos', (req, res) => {
                 } else {
                     fdata.people.sound = fname;
                     fdata.people.soundpass = fpass;
-                    searchuser("name", fname, function (r) {
+                    searchuser("username", fpass, function (r) {
+                       pnum = numberify(r.pnumber);
                         client.messages
                             .create({
                                 body: `${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
                                 from: '+17162216438',
-                                to: numberify(r.pnumber)
+                                to: pnum
                             });
                     })
                 }
@@ -344,6 +345,15 @@ app.post('/events/:eventId/setpos', (req, res) => {
                     } else {
                         fdata.people.lights = fname;
                         fdata.people.lightpass = fpass;
+                        searchuser("username", fpass, function (r) {
+                            pnum = numberify(r.pnumber);
+                            client.messages
+                                .create({
+                                    body: `${r.name}, you have been signed up for the Light Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
+                                    from: '+17162216438',
+                                    to: pnum
+                                });
+                        })
                     }
                 } else {
                     throw "someone already chose that";
@@ -362,6 +372,16 @@ app.post('/events/:eventId/setpos', (req, res) => {
                     } else {
                         fdata.people.backstage = fname;
                         fdata.people.backstagepass = fpass;
+                        searchuser("username", fpass, function (r) {
+                            console.log("ye: " + r.pnumber + " r: " + r);
+                            pnum = numberify(r.pnumber);
+                            client.messages
+                                .create({
+                                    body: `${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
+                                    from: '+17162216438',
+                                    to: pnum
+                                });
+                        })
                     }
                 } else {
                     throw "someone already chose that";
@@ -544,11 +564,13 @@ function searchuser(searchm, search, callback) {
     var pdb = new sqlite3.Database('./user.db', (err) => {
         if (err) { console.log(err) };
     });
-    pdb.get(`SELECT * FROM users WHERE ${searchm}=?`, [search], (err, row) => {
-        JSON.stringify(row);
-        callback(row);
-    })
-}
+    pdb.serialize(function () {
+        pdb.get(`SELECT DISTINCT * FROM user WHERE ${searchm}=?`, [search], (err, row) => {
+            callback(row);
+        });
+    });
+    pdb.close();
+};
 
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
@@ -560,20 +582,47 @@ var unsignup = (req, res) => {
             if (req.cookies.isloggedname == data.people.soundpass || authenticated(req)) {
                 delete data.people.sound;
                 delete data.people.soundpass;
+                searchuser('username', req.cookies.isloggedname, function (r) {
+                    pnum = numberify(r.pnumber);
+                    client.messages
+                        .create({
+                            body: `${r.name}, you have been unsigned up for the Sound Position of ${data.name}`,
+                            from: '+17162216438',
+                            to: pnum
+                        });
+                })
             } else {
                 throw "Incorrect Passcode";
             }
-        } else if (req.params.position == "lights" || authenticated(req)) {
-            if (req.cookies.isloggedname == data.people.lightpass) {
+        } else if (req.params.position == "lights") {
+            if (req.cookies.isloggedname == data.people.lightpass || authenticated(req)) {
                 delete data.people.lights;
                 delete data.people.lightpass;
+                searchuser('username', req.cookies.isloggedname, function (r) {
+                    pnum = numberify(r.pnumber);
+                    client.messages
+                        .create({
+                            body: `${r.name}, you have been unsigned up for the Lights Position of ${data.name}`,
+                            from: '+17162216438',
+                            to: pnum
+                        });
+                });
             } else {
                 throw "Incorrect Passcode";
             }
-        } else if (req.params.position == "backstage" || authenticated(req)) {
-            if (req.cookies.isloggedname == data.people.backstagepass) {
+        } else if (req.params.position == "backstage") {
+            if (req.cookies.isloggedname == data.people.backstagepass || authenticated(req)) {
                 delete data.people.backstage;
                 delete data.people.backstagepass;
+                searchuser('username', req.cookies.isloggedname, function (r) {
+                    pnum = numberify(r.pnumber);
+                    client.messages
+                        .create({
+                            body: `${r.name}, you have been unsigned up for the Backstage Position of ${data.name}`,
+                            from: '+17162216438'  ,
+                            to: pnum
+                        });
+                })
             } else {
                 throw "Incorrect Passcode";
             }
@@ -594,6 +643,8 @@ function checkiflogged(r) {
     }
     return username1;
 }
+
+
 //page that has a list of events
 app.get('*', (req, res) => {
     res.status(404);
@@ -603,4 +654,4 @@ app.get('*', (req, res) => {
 app.listen(port, () => { //START WEBSERVER
     console.log(`The server has started on ${port}`);
     generate();
-})
+});
