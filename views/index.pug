@@ -127,7 +127,9 @@ style.
 
 link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
 include includes/loginbutton.pug
-.w3-container(style="margin: auto;")
+center
+  input#mySearch.w3-input.w3-border-4.w3-black.w3-border-black.w3-xlarge(type='text' onkeyup='myFunction()' placeholder='Search..' title='Type in a event' style="font-size: 18px; padding: 11px; border: 1px solid #ddd; width:60%; margin: auto;")
+div#listmenu.w3-container(style="margin: auto;")
   each event in els
    .w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%; margin:auto')
      a(href='/events/' + event.id)
@@ -136,3 +138,21 @@ include includes/loginbutton.pug
         p.w3-xxlarge.w3-center #{event.name}
   else
     h1.w3-display-middle.w3-xxlarge There are no upcoming Events
+script.
+  function myFunction() {
+  // Declare variables
+  var input, filter, ul, li, a, i;
+  input = document.getElementById("mySearch");
+  filter = input.value.toUpperCase();
+  ul = document.getElementById("listmenu");
+  li = ul.getElementsByTagName("div");
+  // Loop through all list items, and hide those who don't match the search query
+  for (i = 0; i < li.length; i++) {
+  a = li[i].getElementsByTagName("a")[0];
+  if (a.innerHTML.toUpperCase().indexOf(filter) > -1) {
+  li[i].style.display = "";
+  } else {
+  li[i].style.display = "none";
+  }
+  }
+  }
