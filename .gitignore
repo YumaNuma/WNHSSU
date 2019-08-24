@@ -5,3 +5,4 @@ events/
 data/
 settings.json
 user.db
+config.json
