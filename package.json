@@ -13,11 +13,13 @@
     "cookie-parser": "^1.4.4",
     "express": "^4.17.1",
     "helmet": "^3.19.0",
+    "node-gyp": "^5.0.3",
     "path": "^0.12.7",
     "pug": "^2.0.4",
     "replace-in-file": "^4.1.0",
     "request": "^2.88.0",
     "sqlite3": "^4.0.9",
+    "twilio": "^3.33.3",
     "vue": "^2.6.10",
     "vueify": "^9.4.1"
   }
