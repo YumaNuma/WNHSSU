@@ -224,12 +224,7 @@ app.post('/register', (req, res) => {
                 res.cookie('isloggedname', req.body.username, { maxAge: 3600000, httpOnly: true });
                 res.redirect(req.header('Referer') || '/');
                 var pnumber = numberify(req.body.pnumber);
-                client.messages
-                    .create({
-                        body: `Thank you ${req.body.fullname}, for creating an account on the Crew Calendar!`,
-                        from: '+17162216438',
-                        to: pnumber
-                    });
+                messageuser(`Thank you ${ req.body.fullname }, for creating an account on the Crew Calendar! You will be texted notifications! To stop these notifications, please message STOP`, pnumber)
             } else {
                 throw "There is already a user with this info";
             }
@@ -325,13 +320,8 @@ app.post('/events/:eventId/setpos', (req, res) => {
                     fdata.people.sound = fname;
                     fdata.people.soundpass = fpass;
                     searchuser("username", fpass, function (r) {
-                       pnum = numberify(r.pnumber);
-                        client.messages
-                            .create({
-                                body: `${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                from: '+17162216438',
-                                to: pnum
-                            });
+                        pnum = numberify(r.pnumber);
+                        messageuser(`${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                     })
                 }
             } else {
@@ -350,12 +340,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         fdata.people.lightpass = fpass;
                         searchuser("username", fpass, function (r) {
                             pnum = numberify(r.pnumber);
-                            client.messages
-                                .create({
-                                    body: `${r.name}, you have been signed up for the Light Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                    from: '+17162216438',
-                                    to: pnum
-                                });
+                            messageuser(`${r.name}, you have been signed up for the Lights Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -378,12 +363,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         searchuser("username", fpass, function (r) {
                             console.log("ye: " + r.pnumber + " r: " + r);
                             pnum = numberify(r.pnumber);
-                            client.messages
-                                .create({
-                                    body: `${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
-                                    from: '+17162216438',
-                                    to: pnum
-                                });
+                            messageuser(`${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -434,6 +414,14 @@ var authenticated = (r) => {
     }
 };
 
+function messageuser(message, recepient) {
+    client.messages
+        .create({
+            body: message,
+            from: '+17162216438',
+            to: recepient
+        });
+}
 var addtowaitlist = (req, res, n, p) => {
     var path = __dirname + `/events/${req.params.eventId}.json`;
     var data = JSON.parse(fs.readFileSync(path));
@@ -587,12 +575,7 @@ var unsignup = (req, res) => {
                 delete data.people.soundpass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Sound Position of ${data.name}`,
-                            from: '+17162216438',
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Sound Position of ${data.name}`, pnum);
                 })
             } else {
                 throw "Incorrect Passcode";
@@ -603,12 +586,7 @@ var unsignup = (req, res) => {
                 delete data.people.lightpass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Lights Position of ${data.name}`,
-                            from: '+17162216438',
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Lights Position of ${data.name}`, pnum)
                 });
             } else {
                 throw "Incorrect Passcode";
@@ -619,12 +597,7 @@ var unsignup = (req, res) => {
                 delete data.people.backstagepass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
-                    client.messages
-                        .create({
-                            body: `${r.name}, you have been unsigned up for the Backstage Position of ${data.name}`,
-                            from: '+17162216438'  ,
-                            to: pnum
-                        });
+                    messageuser(`${r.name}, you have been unsigned up for the Backstage Position of ${data.name}`, pnum)
                 })
             } else {
                 throw "Incorrect Passcode";
