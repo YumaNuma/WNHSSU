@@ -3,4 +3,5 @@ node_modules/
 .vs/
 events/
 data/
-
+settings.json
+user.db

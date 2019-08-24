@@ -9,6 +9,10 @@ var helmet = require('helmet');
 var request = require('request');
 const sqlite3 = require('sqlite3').verbose();
 //end of declaration of libraries
+const accountSid = 'AC323dabc9bdd9c14b457a32a4d1e6313c';
+const authToken = '442d7e6b6e5abbe6c7427a4f86920743';
+const client = require('twilio')(accountSid, authToken);
+
 
 //begin of global variables
 var app = express();
@@ -161,7 +165,6 @@ app.get('/events/:eventId/waitlist', (req, res) => {
 app.post('/login/user', (req, res) => {
     var db = new sqlite3.Database('./user.db', (err) => {
         if (err) { console.log(err) };
-        console.log("Connect to login database")
     });
     db.serialize(function () {
         db.get(`SELECT * FROM user WHERE username=? OR pnumber=?`, [req.body.id, req.body.id], (err, rows) => {
@@ -186,7 +189,6 @@ app.post('/register', (req, res) => {
         if (err) {
             console.error(err);
         }
-        console.log('Connected to the login database.');
     });
     if (req.body['g-recaptcha-response'] === undefined || req.body['g-recaptcha-response'] === '' || req.body['g-recaptcha-response'] === null) {
         return res.json({ "responseCode": 1, "responseDesc": "Please select captcha" });
@@ -198,37 +200,46 @@ app.post('/register', (req, res) => {
     // Hitting GET request to the URL, Google will respond with success or error scenario.
 
     request(verificationUrl, function (error, response, body) {
-        body = JSON.parse(body);
-        // Success will be true or false depending upon captcha validation.
-        if (body.success !== undefined && !body.success) {
-            res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
-        }
-        var groles;
         try {
-            db.serialize(function () {
-                db.get("SELECT * FROM user WHERE username=? OR pnumber=?", [req.body.id, req.body.id], function (error, row) {
-                    groles = row;
-                });
-            });
-                if (groles !== undefined) {
-                    db.serialize(function () {
-                        db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
-                        db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
-                        db.close();
-                    });
-                    res.redirect(req.header('Referer') || '/');
-                }
-                else {
-                    throw "There is already a user with that name or number";
-                };
-
+            body = JSON.parse(body);
+            // Success will be true or false depending upon captcha validation.
+            if (body.success !== undefined && !body.success) {
+                res.json({ "responseCode": 1, "responseDesc": "Failed captcha verification" });
+            }
         } catch (e) {
             res.render('error', { error: e });
         }
     });
-})
+    checkdb(db, req, pnumber, (row1, p) => {
+        try {
+            if (row1 == undefined) {
+                db.serialize(function () {
+                    db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
+                    db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
+                    db.close();
+                });
+                res.cookie('islogged', req.body.fullname, { maxAge: 900000, httpOnly: true });
+                res.cookie('isloggedname', req.body.username, { maxAge: 900000, httpOnly: true });
+                res.redirect(req.header('Referer') || '/');
+                var pnumber = numberify(req.body.pnumber);
+                client.messages
+                    .create({
+                        body: `Thank you ${req.body.fullname}, for creating an account on the Crew Calendar!`,
+                        from: '+17162216438',
+                        to: pnumber
+                    });
+            } else {
+                throw "There is already a user with this info";
+            }
+        } catch (e) {
+            res.render('error', { error: e })
+        }
+    });
 
-
+});
+function numberify(input) {
+    return '+1' + input.replace(/\s/g, '');
+}
 app.post("/events/addnew", (req, res) => { //MAIN POST FUNCTION - GENERATE EVENT FILE
     ide = req.query.ide || req.body.ide || Math.floor((Math.random() * 10000) + 1000); //e.g. ?id=127852
     name = req.query.name || req.body.name; //e.g. ?name=winterconcert
@@ -310,6 +321,14 @@ app.post('/events/:eventId/setpos', (req, res) => {
                 } else {
                     fdata.people.sound = fname;
                     fdata.people.soundpass = fpass;
+                    searchuser("name", fname, function (r) {
+                        client.messages
+                            .create({
+                                body: `${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`,
+                                from: '+17162216438',
+                                to: numberify(r.pnumber)
+                            });
+                    })
                 }
             } else {
                 throw "someone already chose that";
@@ -464,20 +483,18 @@ var generate = () => {
     }
     if (!fs.existsSync(__dirname + "/data/log.json")) {
         fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
-        console.log("Log created")
+        console.log("Log created");
     }
 };
 var checkwaitlist = (a, p) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${a}.json`));
     if (p == "sound") {
-        console.log(data.people.waitlist.sound.length + "Sound Length");
         if (data.people.waitlist.sound.length > 1) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
             data.people.waitlist.sound.shift();
         } else if (data.people.waitlist.sound.length === 1) {
-            console.log("NOOO")
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
@@ -513,6 +530,26 @@ var checkwaitlist = (a, p) => {
     }
     fs.writeFileSync(__dirname + `/events/${a}.json`, JSON.stringify(data));
 };
+
+function checkdb(db1, req, pnumber, callback) {
+    db1.serialize(function () {
+        db1.get("SELECT DISTINCT * FROM user WHERE username=? OR pnumber=?", [req.body.username, req.body.pnumber], function (error, row) {
+            row = JSON.stringify(row);
+            callback(row, pnumber);
+        });
+    });
+};
+
+function searchuser(searchm, search, callback) {
+    var pdb = new sqlite3.Database('./user.db', (err) => {
+        if (err) { console.log(err) };
+    });
+    pdb.get(`SELECT * FROM users WHERE ${searchm}=?`, [search], (err, row) => {
+        JSON.stringify(row);
+        callback(row);
+    })
+}
+
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
@@ -550,16 +587,6 @@ var unsignup = (req, res) => {
         res.render('error', { error: e });
     }
 };
-function connecttodb(callback) {
-    let db = new sqlite3.Database('./user.db', (err) => {
-        if (err) {
-            console.error(err.message);
-        }
-        console.log('Connected to the login database.');
-    });
-    return db;
-    callback();
-}
 function checkiflogged(r) {
     var username1 = "";
     if (r.cookies.islogged) {

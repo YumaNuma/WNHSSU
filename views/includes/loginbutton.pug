@@ -21,7 +21,7 @@ center
   form.modal-content.animate(action='/login/user' method="POST" style="width: 50%;")
     legend.w3-display-topmiddle.w3-xxlarge LOGIN
     .imgcontainer
-      span.close(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
+      span.close.w3-hover-red(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
       br
     .container
       label(for='id')
@@ -35,7 +35,7 @@ center
   form.modal-content.animate(action='/register' method="POST" style="width: 50%;")
     legend.w3-display-topmiddle.w3-xxlarge Register
     .imgcontainer
-      span.close(onclick="document.getElementById('id01').style.display='none'" title='Close Modal') &times;
+      span.close.w3-hover-red(onclick="document.getElementById('id02').style.display='none'" title='Close Modal') &times;
       br
     .container
       label(for='username')
@@ -50,7 +50,7 @@ center
       label(for='password')
         b Password
       input(type='password' placeholder='Enter Password' name='password' required='')
-      .g-recaptcha(data-sitekey='6LebYEsUAAAAACRDus6tf9efYXkbJ220VLw_G5wU')
+      .w3-mobile.g-recaptcha(data-sitekey='6LebYEsUAAAAACRDus6tf9efYXkbJ220VLw_G5wU')
       button.w3-black(type='submit') Register
 script.
   // Get the modal
