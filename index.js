@@ -513,14 +513,15 @@ var checkwaitlist = (a, p) => {
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
             data.people.waitlist.sound.shift();
-            console.log('biggie cheese');
         } else if (data.people.waitlist.sound.length === 1) {
             var temp = data.people.waitlist.sound[0];
             data.people.sound = temp.name;
             data.people.soundpass = temp.pass;
             delete data.people.waitlist.sound;
-            console.log('no u');
         }
+        searchuser('username', temp.pass, function (r) {
+            messageuser(`${r.name}, you now have the position of Sound for ${data.name}, on ${data.date.month} ${data.date.day}`);
+        });
     } else if (p == "lights") {
         if (data.people.waitlist.lights.length > 1) {
             var temp = data.people.waitlist.lights[0];
@@ -533,6 +534,9 @@ var checkwaitlist = (a, p) => {
             data.people.lightpass = temp.pass;
             delete data.people.waitlist.lights;
         }
+        searchuser('username', temp.pass, function (r) {
+            messageuser(`${r.name}, you now have the position of Lights for ${data.name}, on ${data.date.month} ${data.date.day}`);
+        });
     } else if (p == "backstage") {
         if (data.people.waitlist.backstage.length > 1) {
             var temp = data.people.waitlist.backstage[0];
@@ -545,6 +549,9 @@ var checkwaitlist = (a, p) => {
             data.people.backstagepass = temp.pass;
             delete data.people.waitlist.backstage;
         }
+        searchuser('username', temp.pass, function (r) {
+            messageuser(`${r.name}, you now have the position of Backstage for ${data.name}, on ${data.date.month} ${data.date.day}`);
+        });
     }
     if (!('sound' in data.people.waitlist) && !('lights' in data.people.waitlist) && !('backstage' in data.people.waitlist)) {
         console.log('no u i mean');
