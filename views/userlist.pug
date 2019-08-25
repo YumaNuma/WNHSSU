@@ -1,4 +1,4 @@
-﻿    
+    
 doctype html
 title Williamsville North Crew Calendar
 meta(name='viewport' content='width=device-width, initial-scale=1')
@@ -6,6 +6,7 @@ link(rel='stylesheet' href='/css/w3.css')
 script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js')
 script(src='http://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js')
 script(src='https://www.google.com/recaptcha/api.js')
+include includes/head.pug
 style.
   html {
   height: 100%;
@@ -127,18 +128,20 @@ style.
 
 link(rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto&display=swap")
 include includes/loginbutton.pug
-unless(els.length == 0)
-  center
-    input#mySearch.w3-input.w3-border-4.w3-black.w3-border-black.w3-xlarge(type='text' onkeyup='myFunction()' placeholder='Search..' title='Type in a event' style="font-size: 18px; padding: 11px; border: 1px solid #ddd; width:60%; margin: auto;")
-div#listmenu.w3-container(style="margin: auto;")
-  each event in els
-   .w3-black.w3-section.w3-card-4.w3-hover-shadow.w3-animate-top.w3-hover-white(style='width:60%; margin:auto')
-     a(href='/events/' + event.id)
-      header.w3-container.w3-border.w3-topbar
-       b
-        p.w3-xxlarge.w3-center #{event.name}
-  else
-    h1.w3-display-middle.w3-xxlarge There are no upcoming Events
+div.w3-container
+  p.w3-xxlarge Users
+  table.w3-table-all.w3-large
+    tr
+      th Name
+      th Username
+      th Phone Number
+      th Origin IP
+    each user in list
+      tr
+        td #{user.name}
+        td #{user.username}
+        td #{user.pnumber}
+        td #{user.originip}
 script.
   function myFunction() {
   // Declare variables
