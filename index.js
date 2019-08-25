@@ -22,6 +22,11 @@ var ide, name, month, date, time, pn, loc; //PARAMETERS
 var options;
 //end of global variables
 
+
+//islogged = the full name
+//isloggedname = the username
+
+
 //begin of settings for express
 app.use(cookieParser());
 app.use(helmet());
@@ -29,14 +34,19 @@ app.use(function (req, res, next) {
     var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     //log the ip of a visitor
     try {
-        var content = JSON.parse(fs.readFileSync(__dirname + '/data/log.json'));
-        content.log.push({ "ip": ip, "webpage": req.path, "time": new Date() });
-        fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify(content));
+        if (req.cookies.islogged) {
+            var content = JSON.parse(fs.readFileSync(__dirname + '/data/loguser.json'));
+            content.log.push({ "ip": ip, "name": req.cookies.islogged, "username": req.cookies.isloggedname, "webpage": req.path, "date": new Date() });
+        } else {
+            var content = JSON.parse(fs.readFileSync(__dirname + '/data/log.json'));
+            content.log.push({ "ip": ip, "webpage": req.path, "time": new Date() });
+            fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify(content));
+        }
     } catch (e) {
         console.log("error:" + e);
     }
     next();
-})
+});
 app.use('/admin/*', (req, res, next) => {
     if (authenticated(req)) {
         next();
@@ -123,6 +133,16 @@ app.get("/", (req, res) => { //MAIN PAGE REDIRECT TO EVENTS
 //Delete an event
 // search: delete1
 
+app.get('/admin/users', function (req, res) {
+    var db = new sqlite3.Database('./user.db', (err) => {
+        if (err) {
+            console.error(err);
+        }
+    });
+    db.all('SELECT * FROM user', function (err, row) {
+        res.render('userlist', { list: row });
+    });
+})
 
 //the signup for the event page
 // search: signup1
@@ -212,12 +232,13 @@ app.post('/register', (req, res) => {
             res.render('error', { error: e });
         }
     });
+    var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
     checkdb(db, req, req.body.pnumber, (row1, p) => {
         try {
             if (row1 == undefined) {
                 db.serialize(function () {
                     db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
-                    db.run('INSERT INTO user(username, name, password, pnumber) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber]);
+                    db.run('INSERT INTO user(username, name, password, pnumber, originip) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber, ip]);
                     db.close();
                 });
                 res.cookie('islogged', req.body.fullname, { maxAge: 3600000, httpOnly: true });
@@ -503,6 +524,10 @@ var generate = () => {
     if (!fs.existsSync(__dirname + "/data/log.json")) {
         fs.writeFileSync(__dirname + "/data/log.json", JSON.stringify({ "log": [] }));
         console.log("Log created");
+    }
+    if (!fs.existsSync(__dirname + "/data/loguser.json")) {
+        fs.writeFileSync(__dirname + "/data/loguser.json", JSON.stringify({ "log": [] }));
+        console.log("User Log created");
     }
 };
 var checkwaitlist = (a, p) => {
