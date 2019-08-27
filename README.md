@@ -10,7 +10,6 @@
   - Create events at: http://127.0.0.1/createevent
   - Event List at: http://127.0.0.1/events
 
-LIVE DEMO AT [HERE](https://stagecrew.yaznic.me)
   
 ## Current Features:
   - Sign up for events
