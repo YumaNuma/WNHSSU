@@ -307,8 +307,8 @@ app.post('/register', (req, res) => {
         try {
             if (row1 == undefined) {
                 db.serialize(function () {
-                    db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15))');
-                    db.run('INSERT INTO user(username, name, password, pnumber, originip) VALUES(?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber, ip]);
+                    db.run('CREATE TABLE IF NOT EXISTS user(username TEXT, name TEXT, password TEXT, pnumber varchar(15), originip varchar(15))');
+                    db.run('INSERT INTO user(username, name, password, pnumber, originip) VALUES(?, ?, ?, ?, ?)', [req.body.username, req.body.fullname, req.body.password, req.body.pnumber, ip]);
                     db.close();
                 });
                 res.cookie('islogged', req.body.fullname, { maxAge: 3600000, httpOnly: true });
