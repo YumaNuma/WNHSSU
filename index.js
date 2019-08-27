@@ -10,13 +10,13 @@ var request = require('request');
 const sqlite3 = require('sqlite3').verbose();
 var { accountSid, authToken, gcaptchac } = require('./config.json');
 //end of declaration of libraries
+var schedule = require('node-schedule');
 const client = require('twilio')(accountSid, authToken);
 
 
 //begin of global variables
 var app = express();
 var port = 80;//PORT
-var filedir;//DIRECTORY OF FILE
 var nf;
 var ide, name, month, date, time, pn, loc; //PARAMETERS 
 var options;
@@ -25,6 +25,76 @@ var options;
 
 //islogged = the full name
 //isloggedname = the username
+
+var rule = new schedule.RecurrenceRule();
+rule.hour = 9;
+rule.minute = 0;
+rule.second = 0;
+function getmonth1() {
+    var d = new Date();
+    var month = new Array();
+    month[0] = "January";
+    month[1] = "February";
+    month[2] = "March";
+    month[3] = "April";
+    month[4] = "May";
+    month[5] = "June";
+    month[6] = "July";
+    month[7] = "August";
+    month[8] = "September";
+    month[9] = "October";
+    month[10] = "November";
+    month[11] = "December";
+    return month[d.getMonth()];
+}
+var j = schedule.scheduleJob(rule, function () {
+    console.log('ok it works');
+    fs.readdir(__dirname + '/events', function (err, files) {
+        //handling error
+        if (err) {
+            return console.log('Unable to scan directory: ' + err);
+        }
+        if (files.length == 0) {
+            return console.log('No events to scan');
+        }
+        //listing all files using forEach
+        files.forEach(function (file) {
+            var month = getmonth1(); 
+            var day = new Date().getDate();
+            if (file == 'eventlist.json') {
+                return 0;
+            }
+            var data = JSON.parse(fs.readFileSync(__dirname + `/events/${file}`));
+            if (data.date.day.length == 3) {
+                data.date.day = data.date.day.substring(0, 1);
+            } else {
+                data.date.day = data.date.day.substring(0, 2);
+            }
+            console.log(data.name)
+            console.log((data.date.day == new Date().getDate()) + " day");
+            console.log((data.date.month == month) + " month");
+            if (!(parseInt(data.date.day) == parseInt(day) && data.date.month === month)) {
+                return 0;
+            }
+            if (data.people.sound) {
+                searchuser('username', data.people.soundpass, function (r) {
+                    messageuser(`${data.people.sound}, A reminder that the event, ${data.name}, is scheduled for ${data.date.month} ${data.date.day} is coming up at ${data.time} and that you are working the sound position.`, r.pnumber);
+                });
+            }
+            if (data.people.lights) {
+                searchuser('username', data.people.lightpass, function (r) {
+                    messageuser(`${data.people.lights}, A reminder that the event, ${data.name}, is scheduled for ${data.date.month} ${data.date.day} is coming up at ${data.time} and that you are working the lights position.`);
+                })
+            }
+            if (data.people.backstage) {
+                searchuser('username', data.people.backstagepass, function (r) {
+                    messageuser(`${data.people.backstage}, A reminder that the event, ${data.name}, is scheduled for ${data.date.month} ${data.date.day} is coming up at ${data.time} and that you are working the backstage position`);
+                })
+            }
+        });
+    });
+    res.send('done');
+});
 
 
 //begin of settings for express
@@ -245,7 +315,7 @@ app.post('/register', (req, res) => {
                 res.cookie('isloggedname', req.body.username, { maxAge: 3600000, httpOnly: true });
                 res.redirect(req.header('Referer') || '/');
                 var pnumber = numberify(req.body.pnumber);
-                messageuser(`Thank you ${ req.body.fullname }, for creating an account on the Crew Calendar! You will be texted notifications! To stop these notifications, please message STOP`, pnumber)
+                messageuser(`Thank you ${req.body.fullname}, for creating an account on the Crew Calendar! You will be texted notifications! To stop these notifications, please message STOP`, pnumber)
             } else {
                 throw "There is already a user with this info";
             }
@@ -342,7 +412,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                     fdata.people.soundpass = fpass;
                     searchuser("username", fpass, function (r) {
                         pnum = numberify(r.pnumber);
-                        messageuser(`${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
+                        messageuser(`${r.name}, you have been signed up for the Sound Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day} at ${fdata.time}! Mark your calendar!`, pnum);
                     })
                 }
             } else {
@@ -361,7 +431,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         fdata.people.lightpass = fpass;
                         searchuser("username", fpass, function (r) {
                             pnum = numberify(r.pnumber);
-                            messageuser(`${r.name}, you have been signed up for the Lights Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
+                            messageuser(`${r.name}, you have been signed up for the Lights Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day} at ${fdaata.time}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -383,7 +453,7 @@ app.post('/events/:eventId/setpos', (req, res) => {
                         fdata.people.backstagepass = fpass;
                         searchuser("username", fpass, function (r) {
                             pnum = numberify(r.pnumber);
-                            messageuser(`${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day}! Mark your calendar!`, pnum);
+                            messageuser(`${r.name}, you have been signed up for the Backstage Position of ${fdata.name}, on ${fdata.date.month} ${fdata.date.day} at ${fdaata.time}! Mark your calendar!`, pnum);
                         })
                     }
                 } else {
@@ -609,12 +679,12 @@ function searchuser(searchm, search, callback) {
 var unsignup = (req, res) => {
     var data = JSON.parse(fs.readFileSync(__dirname + `/events/${req.params.eventId}.json`));
     try {
-        if ((!req.cookies.islogged || !req.cookies.isloggedname) && !req.cookies.auth ) {
+        if ((!req.cookies.islogged || !req.cookies.isloggedname) && !req.cookies.auth) {
             throw "YOU ARE NOT LOGGED IN";
         }
         if (req.params.position == "sound") {
             if (req.cookies.isloggedname == data.people.soundpass || authenticated(req)) {
-                delete data.people.sound; 
+                delete data.people.sound;
                 delete data.people.soundpass;
                 searchuser('username', req.cookies.isloggedname, function (r) {
                     pnum = numberify(r.pnumber);
