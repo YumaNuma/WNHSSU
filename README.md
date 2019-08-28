@@ -23,6 +23,7 @@
   - Ability to unsign up for events
   - Waitlist
   - User Base
+  - Notifies user through text on signup, event signup/unsignup, waitlist signup/unsignup, etc
   
 ## Future Features:
 
