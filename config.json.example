@@ -1,5 +1,5 @@
 { 
  "accountSid": "Twilio Account Id",
  "authToken": "Twilio Token",
- "secretkey": "captcha key secret"
+ "gcaptchac": "captcha key secret"
  }
