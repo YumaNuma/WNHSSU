@@ -9,10 +9,12 @@
  
 ## How to Use:
   - Clone using Link
-  - Configure port (Default is 80, change to 443 for strict HTTPS)
+  - Configure port (Default is 80)
   - Website should be hosted at http://127.0.0.1/
-  - Create events at: http://127.0.0.1/createevent
+  - Create events at: http://127.0.0.1/Aadmin/createevent
   - Event List at: http://127.0.0.1/events
+  
+  **DEFAULT PASSWORD FOR STAGE CHIEF/ADMIN IS 6456**
 
   
 ## Current Features:
