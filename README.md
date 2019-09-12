@@ -14,7 +14,7 @@
   - Create events at: http://127.0.0.1/Aadmin/createevent
   - Event List at: http://127.0.0.1/events
   
-  copy the settings.json.example, rename it to settings.json, and replace the values for the captcha and twilio
+  copy the config.json.example, rename it to config.json, and replace the values for the captcha and twilio
   
   **DEFAULT PASSWORD FOR STAGE CHIEF/ADMIN IS 6456**
 
