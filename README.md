@@ -4,17 +4,21 @@
 
   
   **IT IS DEPENDANT ON YOU TO SECURE THE SYSTEM IN A WAY THAT IS APPROPRIATE TO YOUR SCHOOL. ONLY "SECURITY" THIS THING HAS THAT I'VE UPLOADED TO GITHUB IS CAPTCHA, AND PASSWORD HASHES IN WHICH YOU MUST PROVIDE THE API KEYS FOR.**
-  
+  Future for this: might refactor it to seperate the backend and front end, right now the api is mixed with the frontend.
  
 ## How to Use:
-  - Clone using Link
+```
+git clone https://GitHub.com/zaida04/WNSU.git
+cd WNSU
+npm install
+Node index.js
+```
   - Configure port (Default is 80)
-  - substitue the api keys
+  - copy the config.json.example, rename it to config.json,
+  - substitue the api keys for captcha and twilio in config.json 
   - Website should be hosted at http://127.0.0.1/
-  - Create events at: http://127.0.0.1/Aadmin/createevent
+  - Create events at: http://127.0.0.1/admin/createevent
   - Event List at: http://127.0.0.1/events
-  
-  copy the config.json.example, rename it to config.json, and replace the values for the captcha and twilio
   
   **DEFAULT PASSWORD FOR STAGE CHIEF/ADMIN IS 6456**
 
