@@ -1,12 +1,9 @@
 # Event System for Stage Crews
   This system allows Crew Chief to create an event, allow Crew Members to sign up for events, and see an up-to-date list of events all from a mobile device or PC!
   The frontend is semi-mobile friendly, but all features 100% work on both mobile and PC.
+
   
-  **jeebsuz someone please refactor this.**
-  
-  *FOR WILLIAMSVILLE NORTH HIGH SCHOOL THERE IS A DIFFERENT PRIVATE VERSION WITH DIFFERENT SECURITY SETTINGS FOR MORE SECURE USAGE*
-  
-  **IT IS DEPENDANT ON YOU TO SECURE THE SYSTEM IN A WAY THAT IS APPROPRIATE TO YOUR SCHOOL. ONLY "SECURITY" THIS THING HAS THAT I'VE UPLOADED TO GITHUB IS CAPTCHA, AND PASSWORD HASHES.**
+  **IT IS DEPENDANT ON YOU TO SECURE THE SYSTEM IN A WAY THAT IS APPROPRIATE TO YOUR SCHOOL. ONLY "SECURITY" THIS THING HAS THAT I'VE UPLOADED TO GITHUB IS CAPTCHA, AND PASSWORD HASHES IN WHICH YOU MUST PROVIDE THE API KEYS FOR.**
   
  
 ## How to Use:
