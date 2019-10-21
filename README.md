@@ -9,6 +9,7 @@
 ## How to Use:
   - Clone using Link
   - Configure port (Default is 80)
+  - substitue the api keys
   - Website should be hosted at http://127.0.0.1/
   - Create events at: http://127.0.0.1/Aadmin/createevent
   - Event List at: http://127.0.0.1/events
