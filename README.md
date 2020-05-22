@@ -1,7 +1,10 @@
 # Event System for Stage Crews
   This system allows Crew Chief to create an event, allow Crew Members to sign up for events, and see an up-to-date list of events all from a mobile device or PC!
   
-![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/zaida04/WNSU?style=for-the-badge)![David](https://img.shields.io/david/zaida04/WNSU?style=for-the-badge)[![DeepScan grade](https://deepscan.io/api/teams/7103/projects/9241/branches/117530/badge/grade.svg?style=for-the-badge)](https://deepscan.io/dashboard#view=project&tid=7103&pid=9241&bid=117530)
+![GitHub code size in bytes](https://img.shields.io/github/languages/code-size/zaida04/WNSU?style=for-the-badge)![David](https://img.shields.io/david/zaida04/WNSU?style=for-the-badge)
+
+[![DeepScan grade](https://deepscan.io/api/teams/7103/projects/9241/branches/117530/badge/grade.svg?style=for-the-badge)](https://deepscan.io/dashboard#view=project&tid=7103&pid=9241&bid=117530)
+
   The frontend is semi-mobile friendly, but all features 100% work on both mobile and PC.
 
   
