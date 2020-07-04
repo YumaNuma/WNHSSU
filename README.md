@@ -1,3 +1,6 @@
+# Warning, this repo is depreceated. I made this back when I did not know a lot about proper security practices. Use at your own risk
+
+
 # Event System for Stage Crews
   This system allows Crew Chief to create an event, allow Crew Members to sign up for events, and see an up-to-date list of events all from a mobile device or PC!
   
